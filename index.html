@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
+<title>⚡ VLESS → Hysteria2 Converter</title>
+<style>
+/* ===== RESET ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:#0d0d0d;color:#e0e0e0;font-family:'Inter',-apple-system,'Segoe UI','Roboto',sans-serif;font-size:clamp(0.875rem,2vw,1rem);line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+img,svg{display:block;max-width:100%}
+a{color:#00ff41;text-decoration:none}
+a:hover{text-decoration:underline}
+button{font-family:inherit}
+code,pre{font-family:'JetBrains Mono','Fira Code','Cascadia Code','Consolas',monospace}
+input,textarea,select{font-family:inherit}
+::selection{background:rgba(0,255,65,0.15);color:#00ff41}
+::-moz-selection{background:rgba(0,255,65,0.15);color:#00ff41}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#0d0d0d}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:9999px}
+::-webkit-scrollbar-thumb:hover{background:#6b6b7b}
+*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) #0d0d0d}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.fade-enter,.fade-enter-fast,.fade-enter-slow,.pulse,.shake{animation:none!important;opacity:1!important;transform:none!important}}
+
+/* ===== CSS VARIABLES ===== */
+:root{
+--neon-green:#00ff41;
+--neon-green-dim:#00cc34;
+--neon-green-soft:rgba(0,255,65,0.15);
+--neon-green-glow:rgba(0,255,65,0.4);
+--neon-cyan:#00f0ff;
+--error-red:#ff3355;
+--error-red-soft:rgba(255,51,85,0.15);
+--error-bg:rgba(255,51,85,0.08);
+--success-green:#00e676;
+--text-primary:#e0e0e0;
+--text-secondary:#9e9eb0;
+--text-muted:#6b6b7b;
+--text-heading:#ffffff;
+--bg-primary:#0d0d0d;
+--bg-secondary:#13131a;
+--bg-card:#1a1a24;
+--bg-input:#0a0a0f;
+--bg-hover:#1e1e2e;
+--border-default:rgba(255,255,255,0.06);
+--border-hover:rgba(255,255,255,0.12);
+--font-heading:'JetBrains Mono','Fira Code','Cascadia Code','Consolas',monospace;
+--font-mono:'JetBrains Mono','Fira Code','Cascadia Code','Consolas',monospace;
+--font-body:'Inter',-apple-system,'Segoe UI','Roboto',sans-serif;
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;
+--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;
+--page-width:min(720px,calc(100% - 48px));
+--card-padding:20px;
+--input-padding:12px 16px;
+--btn-padding:12px 24px;
+--section-gap:24px;
+--transition-fast:150ms ease-out;
+--transition-normal:250ms ease-out;
+--transition-spring:350ms cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* ===== LAYOUT ===== */
+#app{min-height:100vh;background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-body)}
+.container{width:var(--page-width);margin:0 auto;padding:var(--space-10) 0 var(--space-12);display:flex;flex-direction:column;gap:var(--section-gap)}
+
+/* ===== HEADER ===== */
+header{text-align:center;padding-bottom:var(--space-4)}
+.logo{font-size:clamp(2rem,5vw,3rem);display:block;margin-bottom:var(--space-2)}
+h1{font-family:var(--font-heading);font-size:clamp(1.5rem,4vw,2.25rem);font-weight:700;color:var(--text-heading);letter-spacing:-.02em;line-height:1.2}
+h1 .accent{color:var(--neon-green)}
+.subtitle{color:var(--text-muted);font-size:clamp(0.875rem,2vw,1rem);margin-top:var(--space-2);font-family:var(--font-mono)}
+.subtitle .arrow{color:var(--neon-green)}
+
+/* ===== SECTION HEADERS ===== */
+.section-header{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);padding-bottom:var(--space-3);border-bottom:1px solid var(--border-default)}
+.section-title{color:var(--text-heading);font-family:var(--font-heading);font-size:clamp(0.95rem,2.5vw,1.25rem);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.section-title::before{content:'\258C';color:var(--neon-green);margin-right:var(--space-2)}
+
+/* ===== INPUT GROUP ===== */
+.input-group{position:relative;width:100%}
+.input-link{width:100%;min-height:56px;padding:var(--space-4);background:var(--bg-input);border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-mono);font-size:clamp(0.8125rem,1.8vw,0.9375rem);line-height:1.5;outline:none;transition:border-color var(--transition-fast),box-shadow var(--transition-fast);resize:vertical}
+.input-link::placeholder{color:var(--text-muted);font-family:var(--font-mono);font-size:clamp(0.75rem,1.5vw,0.875rem);opacity:.7}
+.input-link:focus{border-color:var(--neon-green);box-shadow:0 0 0 2px var(--neon-green-soft),0 0 12px var(--neon-green-glow)}
+.input-link.error{border-color:var(--error-red);box-shadow:0 0 0 2px var(--error-red-soft),0 0 12px rgba(255,51,85,0.3)}
+.input-link.filled{border-color:rgba(0,255,65,0.3)}
+.input-error{display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-2);color:var(--error-red);font-size:clamp(0.75rem,1.5vw,0.875rem);line-height:1.5;animation:fadeSlideIn 250ms ease-out}
+
+/* ===== BUTTONS ===== */
+.btn-convert{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);padding:var(--btn-padding);min-height:48px;width:100%;background:linear-gradient(135deg,var(--neon-green) 0%,var(--neon-green-dim) 100%);color:#000;font-family:var(--font-heading);font-size:clamp(0.875rem,2vw,1rem);font-weight:600;letter-spacing:.02em;text-transform:uppercase;border:none;border-radius:var(--radius-md);cursor:pointer;transition:transform var(--transition-fast),box-shadow var(--transition-fast),opacity var(--transition-fast);position:relative;overflow:hidden}
+.btn-convert::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,0.25) 50%,transparent 60%);transform:translateX(-100%);transition:transform .6s ease}
+.btn-convert:hover::before{transform:translateX(100%)}
+.btn-convert:hover{transform:translateY(-1px);box-shadow:0 0 8px var(--neon-green-glow),0 0 20px rgba(0,255,65,0.15)}
+.btn-convert:active{transform:scale(0.97);box-shadow:none}
+.btn-convert:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-convert:focus-visible{outline:2px solid #fff;outline-offset:3px}
+
+.btn-copy{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);padding:var(--space-3) var(--space-5);min-height:40px;background:transparent;color:var(--neon-green);font-family:var(--font-mono);font-size:clamp(0.75rem,1.5vw,0.875rem);font-weight:500;border:1px solid var(--neon-green);border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition-fast);white-space:nowrap}
+.btn-copy:hover{background:var(--neon-green-soft);box-shadow:0 0 12px var(--neon-green-glow)}
+.btn-copy:active{transform:scale(0.96);background:rgba(0,255,65,0.2)}
+.btn-copy.copied{background:var(--neon-green);color:#000;border-color:var(--neon-green);animation:pulseCopy .5s ease-out}
+.btn-copy:focus-visible{outline:2px solid #fff;outline-offset:3px}
+
+.btn-ghost{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-4);background:transparent;color:var(--text-muted);font-family:var(--font-body);font-size:.75rem;border:1px solid var(--border-default);border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition-fast)}
+.btn-ghost:hover{color:var(--error-red);border-color:var(--error-red-soft);background:var(--error-bg)}
+
+/* ===== CARD ===== */
+.card{background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:var(--card-padding);box-shadow:0 2px 12px rgba(0,0,0,0.4)}
+.card-accent{border-left:1.5px solid var(--neon-green)}
+
+/* ===== PREVIEW GRID ===== */
+.preview-grid{display:grid;grid-template-columns:110px 1fr;gap:var(--space-2) var(--space-4);font-size:clamp(0.75rem,1.5vw,0.875rem)}
+.preview-label{color:var(--text-muted);font-family:var(--font-heading);font-weight:500;text-transform:uppercase;letter-spacing:.08em}
+.preview-value{color:var(--text-primary);font-family:var(--font-mono);word-break:break-all}
+.preview-value.highlight{color:var(--neon-green)}
+.preview-divider{grid-column:1/-1;border:none;border-top:1px solid var(--border-default);margin:var(--space-1) 0}
+
+/* ===== SETTINGS ===== */
+.settings-group{display:flex;flex-direction:column;gap:var(--space-4)}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-2) 0}
+.setting-label{flex-shrink:0;color:var(--text-secondary);font-size:clamp(0.75rem,1.5vw,0.875rem);font-weight:500;min-width:150px}
+.input-speed-wrapper{display:flex;align-items:center;gap:var(--space-3);flex:1}
+.input-range{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:var(--border-default);border-radius:var(--radius-full);outline:none;cursor:pointer}
+.input-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;background:var(--neon-green);border-radius:50%;cursor:pointer;box-shadow:0 0 6px var(--neon-green-glow);transition:transform var(--transition-fast)}
+.input-range::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.input-range::-moz-range-thumb{width:18px;height:18px;background:var(--neon-green);border:none;border-radius:50%;cursor:pointer;box-shadow:0 0 6px var(--neon-green-glow)}
+.input-speed-value{min-width:56px;text-align:right;color:var(--neon-green);font-family:var(--font-mono);font-size:clamp(0.875rem,2vw,1rem);font-weight:600}
+
+/* Toggle */
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0;cursor:pointer}
+.toggle input{position:absolute;opacity:0;width:0;height:0}
+.toggle-track{position:absolute;inset:0;background:var(--border-default);border-radius:var(--radius-full);transition:background var(--transition-fast)}
+.toggle-track::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:var(--text-muted);border-radius:50%;transition:all var(--transition-spring)}
+.toggle input:checked+.toggle-track{background:var(--neon-green-soft)}
+.toggle input:checked+.toggle-track::after{transform:translateX(20px);background:var(--neon-green);box-shadow:0 0 6px var(--neon-green-glow)}
+.toggle input:focus-visible+.toggle-track{box-shadow:0 0 0 3px var(--neon-green-soft)}
+
+/* Text input */
+.input-text{width:100%;padding:var(--input-padding);background:var(--bg-input);border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font-mono);font-size:clamp(0.75rem,1.5vw,0.875rem);outline:none;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input-text:focus{border-color:var(--neon-green);box-shadow:0 0 0 2px var(--neon-green-soft),0 0 12px var(--neon-green-glow)}
+.input-text::placeholder{color:var(--text-muted);opacity:.6}
+.textarea-extra{min-height:64px;resize:vertical;font-size:clamp(0.75rem,1.5vw,0.875rem)}
+
+/* ===== RESULT PANEL ===== */
+.result-panel{background:var(--bg-card);border:1px solid var(--neon-green-soft);border-radius:var(--radius-md);padding:var(--card-padding);box-shadow:0 0 8px var(--neon-green-glow),0 0 20px rgba(0,255,65,0.15);animation:fadeSlideIn 350ms ease-out}
+.result-link{display:block;padding:var(--space-3);margin-bottom:var(--space-4);background:var(--bg-input);border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--neon-green);font-family:var(--font-mono);font-size:clamp(0.8125rem,1.8vw,0.9375rem);line-height:1.5;word-break:break-all;user-select:all}
+.result-actions{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
+.copy-feedback{color:var(--success-green);font-size:clamp(0.75rem,1.5vw,0.875rem);font-weight:500;animation:fadeIn 200ms ease-out}
+
+/* ===== HISTORY ===== */
+.history-list{display:flex;flex-direction:column;gap:var(--space-3)}
+.history-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);background:var(--bg-card);border:1px solid var(--border-default);border-radius:var(--radius-sm);cursor:pointer;transition:all var(--transition-fast)}
+.history-item:hover{background:var(--bg-hover);border-color:var(--neon-green-soft)}
+.history-item:active{transform:scale(0.99)}
+.history-time{color:var(--text-muted);font-size:.75rem;white-space:nowrap;flex-shrink:0}
+.history-icons{color:var(--text-muted);font-family:var(--font-mono);font-size:.75rem;flex-shrink:0}
+.history-link-preview{color:var(--text-secondary);font-family:var(--font-mono);font-size:.75rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.history-arrow{color:var(--neon-green);font-size:clamp(0.875rem,2vw,1rem);flex-shrink:0}
+.history-actions{margin-top:var(--space-4);display:flex;justify-content:flex-end}
+.history-empty{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);padding:var(--space-8) 0;color:var(--text-muted);font-size:clamp(0.75rem,1.5vw,0.875rem);text-align:center}
+
+/* ===== NOTIFICATION ===== */
+.notification{position:fixed;top:var(--space-5);left:50%;transform:translateX(-50%);padding:var(--space-3) var(--space-5);background:var(--bg-card);border:1px solid var(--neon-green);border-radius:var(--radius-md);color:var(--neon-green);font-family:var(--font-mono);font-size:clamp(0.75rem,1.5vw,0.875rem);z-index:1000;box-shadow:0 0 12px var(--neon-green-glow);animation:fadeSlideIn 250ms ease-out}
+.notification.error{border-color:var(--error-red);color:var(--error-red);box-shadow:0 0 12px rgba(255,51,85,0.3)}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulseCopy{0%{transform:scale(1)}40%{transform:scale(1.08)}60%{transform:scale(0.96)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 6px var(--neon-green-glow)}50%{box-shadow:0 0 16px var(--neon-green-glow),0 0 30px rgba(0,255,65,0.2)}}
+.fade-enter{animation:fadeSlideIn var(--transition-normal) ease-out both}
+.hidden{display:none!important}
+
+/* ===== RESPONSIVE ===== */
+@media (min-width:768px){
+:root{--page-width:min(680px,90%);--card-padding:24px}
+.preview-grid{grid-template-columns:130px 1fr}
+.setting-label{min-width:170px;font-size:clamp(0.875rem,2vw,1rem)}
+}
+@media (min-width:1024px){
+:root{--page-width:min(720px,80%);--btn-padding:16px 32px}
+}
+@media (max-width:480px){
+.setting-row{flex-direction:column;align-items:stretch;gap:var(--space-2)}
+.setting-label{min-width:unset}
+.input-speed-wrapper{width:100%}
+.preview-grid{grid-template-columns:1fr;gap:var(--space-1)}
+.preview-label{font-size:.75rem;margin-top:var(--space-2)}
+.result-actions{flex-direction:column;align-items:stretch}
+.btn-copy{width:100%;justify-content:center}
+.section-title{font-size:clamp(0.875rem,2vw,1rem)}
+.history-item{flex-wrap:wrap;gap:var(--space-2)}
+.history-time{width:100%;font-size:.75rem}
+.btn-convert,.btn-copy,.btn-ghost{min-height:44px}
+.toggle{width:52px;height:28px;align-self:flex-start}
+.toggle-track::after{width:22px;height:22px;top:3px;left:3px}
+.toggle input:checked+.toggle-track::after{transform:translateX(24px)}
+.input-link{min-height:48px;font-size:16px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="container">
+    <!-- HEADER -->
+    <header>
+      <span class="logo">⚡</span>
+      <h1><span class="accent">VLESS</span> → Hysteria2</h1>
+      <p class="subtitle"><span class="arrow">▸</span> Конвертируй VLESS и XHTTP ссылки за клик <span class="arrow">◂</span></p>
+    </header>
+
+    <!-- INPUT -->
+    <section>
+      <div class="input-group">
+        <textarea id="inputLink" class="input-link" rows="2" placeholder="🔗 Вставьте vless:// или xhttp:// ссылку" spellcheck="false"></textarea>
+        <div id="inputError" class="input-error hidden"></div>
+      </div>
+    </section>
+
+    <!-- CONVERT BUTTON -->
+    <button id="btnConvert" class="btn-convert" disabled>🚀 Конвертировать</button>
+
+    <!-- PARSED PREVIEW -->
+    <section id="previewSection" class="hidden">
+      <div class="section-header">
+        <h2 class="section-title">Распарсенные данные</h2>
+      </div>
+      <div class="card card-accent">
+        <div class="preview-grid" id="previewGrid">
+          <div class="preview-label">UUID</div><div class="preview-value highlight" id="pvUuid">—</div>
+          <hr class="preview-divider">
+          <div class="preview-label">Host</div><div class="preview-value" id="pvHost">—</div>
+          <hr class="preview-divider">
+          <div class="preview-label">Port</div><div class="preview-value" id="pvPort">—</div>
+          <hr class="preview-divider">
+          <div class="preview-label">Type</div><div class="preview-value" id="pvType">—</div>
+          <hr class="preview-divider">
+          <div class="preview-label">SNI</div><div class="preview-value" id="pvSni">—</div>
+          <hr class="preview-divider">
+          <div class="preview-label">Encryption</div><div class="preview-value" id="pvEncryption">—</div>
+          <hr class="preview-divider">
+          <div class="preview-label">Flow</div><div class="preview-value" id="pvFlow">—</div>
+          <hr class="preview-divider">
+          <div class="preview-label">FP</div><div class="preview-value" id="pvFp">—</div>
+          <hr class="preview-divider">
+          <div class="preview-label">PBK</div><div class="preview-value" id="pvPbk">—</div>
+          <hr class="preview-divider">
+          <div class="preview-label">SID</div><div class="preview-value" id="pvSid">—</div>
+          <hr class="preview-divider">
+          <div class="preview-label">SPX</div><div class="preview-value" id="pvSpx">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section>
+      <div class="section-header">
+        <h2 class="section-title">Настройки Hysteria2</h2>
+      </div>
+      <div class="card">
+        <div class="settings-group">
+          <!-- Speed -->
+          <div class="setting-row">
+            <span class="setting-label">⚡ Скорость провайдера</span>
+            <div class="input-speed-wrapper">
+              <input type="range" id="speedRange" class="input-range" min="50" max="2000" value="500" step="10">
+              <span class="input-speed-value" id="speedValue">500</span>
+            </div>
+          </div>
+          <!-- Fast Open -->
+          <div class="setting-row">
+            <span class="setting-label">🚀 Fast Open</span>
+            <label class="toggle">
+              <input type="checkbox" id="fastOpenToggle" checked>
+              <div class="toggle-track"></div>
+            </label>
+          </div>
+          <!-- SNI -->
+          <div class="setting-row">
+            <span class="setting-label">🎯 SNI</span>
+            <input type="text" id="sniInput" class="input-text" placeholder="Авто (из ссылки) или введите вручную" spellcheck="false">
+          </div>
+          <!-- Extra params -->
+          <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:var(--space-2)">
+            <span class="setting-label">📝 Доп. параметры</span>
+            <textarea id="extraParams" class="input-text textarea-extra" placeholder="obfs=xplus&amp;obfs-password=secret" spellcheck="false"></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULT -->
+    <section id="resultSection" class="hidden">
+      <div class="section-header">
+        <h2 class="section-title">Результат</h2>
+      </div>
+      <div class="result-panel">
+        <code class="result-link" id="resultLink">hysteria2://...</code>
+        <div class="result-actions">
+          <button id="btnCopy" class="btn-copy">📋 Копировать</button>
+          <span id="copyFeedback" class="copy-feedback hidden">✅ Скопировано!</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="historySection">
+      <div class="section-header">
+        <h2 class="section-title">История конверсий</h2>
+      </div>
+      <div class="card">
+        <div id="historyEmpty" class="history-empty">
+          <span>📭</span>
+          <span>История пуста</span>
+          <span style="font-size:clamp(0.75rem,1.5vw,0.875rem);color:var(--text-muted)">Конвертируйте первую ссылку</span>
+        </div>
+        <div id="historyList" class="history-list hidden"></div>
+        <div id="historyActions" class="history-actions hidden">
+          <button id="btnClearHistory" class="btn-ghost">🗑️ Очистить историю</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer style="text-align:center;padding:var(--space-8) 0 var(--space-4);color:var(--text-muted);font-size:.75rem;font-family:var(--font-mono)">
+      <span style="color:var(--neon-green);">$</span> vless-converter v1.0 &nbsp;·&nbsp; 🐀 made by shnyr
+    </footer>
+  </div>
+</div>
+
+<!-- ===== NOTIFICATION CONTAINER ===== -->
+<div id="notificationContainer" style="position:fixed;top:var(--space-5);left:50%;transform:translateX(-50%);z-index:1000;display:flex;flex-direction:column;gap:var(--space-2);pointer-events:none"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ============ DOM REFS ============ */
+const $ = id => document.getElementById(id);
+const inputLink = $('inputLink');
+const inputError = $('inputError');
+const btnConvert = $('btnConvert');
+const previewSection = $('previewSection');
+const resultSection = $('resultSection');
+const resultLink = $('resultLink');
+const btnCopy = $('btnCopy');
+const copyFeedback = $('copyFeedback');
+const historyList = $('historyList');
+const historyEmpty = $('historyEmpty');
+const historyActions = $('historyActions');
+const btnClearHistory = $('btnClearHistory');
+const speedRange = $('speedRange');
+const speedValue = $('speedValue');
+const fastOpenToggle = $('fastOpenToggle');
+const sniInput = $('sniInput');
+const extraParams = $('extraParams');
+
+const previewFields = {
+  uuid: $('pvUuid'),
+  host: $('pvHost'),
+  port: $('pvPort'),
+  type: $('pvType'),
+  sni: $('pvSni'),
+  encryption: $('pvEncryption'),
+  flow: $('pvFlow'),
+  fp: $('pvFp'),
+  pbk: $('pvPbk'),
+  sid: $('pvSid'),
+  spx: $('pvSpx')
+};
+
+/* ============ CONSTANTS ============ */
+const HISTORY_KEY = 'vh_history';
+const SETTINGS_KEY = 'vh_settings';
+const SNI_KEY = 'vh_last_sni';
+const MAX_HISTORY = 5;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/* ============ STORAGE ============ */
+function storageGet(key, def) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : def;
+  } catch { return def; }
+}
+function storageSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
+/* ============ PARSER ============ */
+function parseVlessXHttp(link) {
+  if (!link || typeof link !== 'string') return { error: 'Вставьте VLESS или XHTTP ссылку' };
+
+  const trimmed = link.trim();
+  if (!trimmed) return { error: 'Вставьте VLESS или XHTTP ссылку' };
+
+  const schemeMatch = trimmed.match(/^(vless|xhttp):\/\//i);
+  if (!schemeMatch) return { error: 'Неверный формат: отсутствует схема (vless:// или xhttp://)' };
+
+  const scheme = schemeMatch[1].toLowerCase();
+
+  // Normalize for URL parser
+  let normalized;
+  try {
+    normalized = trimmed.replace(/^(vless|xhttp):\/\//i, 'https://');
+  } catch { return { error: 'Ошибка обработки ссылки' }; }
+
+  let url;
+  try {
+    url = new URL(normalized);
+  } catch {
+    return { error: 'Неверный формат: не удалось распарсить URL' };
+  }
+
+  const uuid = decodeURIComponent(url.username);
+  if (!uuid || !UUID_RE.test(uuid)) return { error: 'Неверный UUID в ссылке' };
+
+  const host = url.hostname;
+  if (!host) return { error: 'Не указан хост' };
+
+  const port = url.port ? parseInt(url.port, 10) : 443;
+  if (isNaN(port) || port < 1 || port > 65535) return { error: 'Неверный порт' };
+
+  const sp = url.searchParams;
+  const rawQuery = {};
+  for (const [k, v] of sp) { rawQuery[k] = v; }
+
+  const parsed = {
+    uuid,
+    host,
+    port,
+    type: scheme === 'xhttp' ? 'xhttp' : (rawQuery.type || 'vless'),
+    encryption: sp.get('encryption') || '',
+    sni: sp.get('sni') || sp.get('security') || '',
+    fp: sp.get('fp') || '',
+    pbk: sp.get('pbk') || '',
+    sid: sp.get('sid') || '',
+    spx: sp.get('spx') || '',
+    flow: sp.get('flow') || '',
+    security: sp.get('security') || '',
+    rawQuery
+  };
+
+  return { parsed };
+}
+
+/* ============ GENERATOR ============ */
+function generateHysteria2Uri(parsed, settings) {
+  const params = new URLSearchParams();
+
+  params.set('insecure', '1');
+  params.set('alpn', 'h3');
+
+  const sni = (settings.sni || '').trim() || parsed.sni || parsed.host;
+  if (sni) params.set('sni', sni);
+
+  const speed = Math.max(50, Math.min(2000, settings.speed || 500));
+  params.set('down', String(speed));
+  params.set('up', String(speed));
+
+  params.set('fastopen', settings.fastOpen ? '1' : '0');
+  params.set('obfs', 'none');
+
+  // Custom extra params
+  if (settings.extraParams && settings.extraParams.trim()) {
+    try {
+      const custom = new URLSearchParams(settings.extraParams.trim());
+      for (const [k, v] of custom) {
+        params.set(k, v);
+      }
+    } catch {}
+  }
+
+  return 'hysteria2://' + parsed.uuid + '@' + parsed.host + ':' + parsed.port + '?' + params.toString();
+}
+
+/* ============ UI STATE ============ */
+let lastParsed = null;
+
+/* ============ UI RENDER ============ */
+function showError(msg) {
+  inputLink.classList.add('error');
+  inputError.textContent = msg;
+  inputError.classList.remove('hidden');
+  btnConvert.disabled = true;
+}
+
+function clearError() {
+  inputLink.classList.remove('error');
+  inputError.classList.add('hidden');
+}
+
+function populatePreview(parsed) {
+  const p = parsed;
+  previewFields.uuid.textContent = p.uuid;
+  previewFields.host.textContent = p.host;
+  previewFields.port.textContent = String(p.port);
+  previewFields.type.textContent = p.type;
+  previewFields.sni.textContent = p.sni || '—';
+  previewFields.encryption.textContent = p.encryption || '—';
+  previewFields.flow.textContent = p.flow || '—';
+  previewFields.fp.textContent = p.fp || '—';
+  previewFields.pbk.textContent = p.pbk || '—';
+  previewFields.sid.textContent = p.sid || '—';
+  previewFields.spx.textContent = p.spx || '—';
+  previewSection.classList.remove('hidden');
+  previewSection.classList.add('fade-enter');
+}
+
+function showResult(href) {
+  resultLink.textContent = href;
+  resultSection.classList.remove('hidden');
+  resultSection.classList.add('fade-enter');
+}
+
+function showNotification(msg, isError) {
+  const container = $('notificationContainer');
+  const el = document.createElement('div');
+  el.textContent = msg;
+  el.style.cssText = 'padding:12px 20px;background:#1a1a24;border:1px solid ' + (isError ? '#ff3355' : '#00ff41') + ';border-radius:12px;color:' + (isError ? '#ff3355' : '#00ff41') + ';font-family:\'JetBrains Mono\',monospace;font-size:clamp(0.75rem,1.5vw,0.875rem);box-shadow:0 0 12px ' + (isError ? 'rgba(255,51,85,0.3)' : 'rgba(0,255,65,0.4)') + ';animation:fadeSlideIn 250ms ease-out;pointer-events:auto;text-align:center';
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 200ms';
+    setTimeout(() => el.remove(), 200);
+  }, 2500);
+}
+
+/* ============ HISTORY ============ */
+function loadHistory() {
+  return storageGet(HISTORY_KEY, []);
+}
+
+function saveHistoryEntry(entry) {
+  let history = loadHistory();
+  history.unshift(entry);
+  if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
+  storageSet(HISTORY_KEY, history);
+}
+
+function clearHistory() {
+  storageSet(HISTORY_KEY, []);
+  renderHistory();
+  showNotification('🗑️ История очищена', false);
+}
+
+function formatTimeAgo(ts) {
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'только что';
+  if (mins < 60) return mins + ' мин назад';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + ' ч назад';
+  const days = Math.floor(hrs / 24);
+  return days + ' дн назад';
+}
+
+function truncateLink(link, maxLen) {
+  if (link.length <= maxLen) return link;
+  return link.substring(0, maxLen - 3) + '...';
+}
+
+function renderHistory() {
+  const history = loadHistory();
+  const hasItems = history.length > 0;
+
+  if (hasItems) {
+    historyEmpty.classList.add('hidden');
+    historyList.classList.remove('hidden');
+    historyActions.classList.remove('hidden');
+    historyList.innerHTML = '';
+    history.forEach(function(entry) {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.setAttribute('data-id', entry.id || '');
+
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'history-time';
+      timeSpan.textContent = '⏺ ' + formatTimeAgo(entry.createdAt || entry.timestamp || 0);
+
+      const iconsSpan = document.createElement('span');
+      iconsSpan.className = 'history-icons';
+
+      const linkPreview = document.createElement('span');
+      linkPreview.className = 'history-link-preview';
+
+      const arrow = document.createElement('span');
+      arrow.className = 'history-arrow';
+      arrow.textContent = '→';
+
+      if (entry.parsed && entry.parsed.type) {
+        iconsSpan.textContent = entry.parsed.type.toUpperCase();
+        linkPreview.textContent = truncateLink(entry.parsed.uuid + '@' + entry.parsed.host + ':' + entry.parsed.port, 50);
+      } else {
+        iconsSpan.textContent = 'VLESS';
+        linkPreview.textContent = truncateLink(entry.inputLink || entry.input || '', 50);
+      }
+
+      item.appendChild(timeSpan);
+      item.appendChild(iconsSpan);
+      item.appendChild(arrow);
+      item.appendChild(linkPreview);
+
+      // Click to restore
+      item.addEventListener('click', function() {
+        const output = entry.outputLink || entry.output || '';
+        if (output) {
+          const inp = entry.inputLink || entry.input || '';
+          if (inp) {
+            inputLink.value = inp;
+            triggerParse();
+          }
+          showResult(output);
+          resultSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+
+      historyList.appendChild(item);
+    });
+  } else {
+    historyEmpty.classList.remove('hidden');
+    historyList.classList.add('hidden');
+    historyActions.classList.add('hidden');
+  }
+}
+
+/* ============ MAIN CONVERT ============ */
+function doConvert() {
+  if (!lastParsed) return;
+
+  const settings = {
+    speed: parseInt(speedRange.value, 10) || 500,
+    fastOpen: fastOpenToggle.checked,
+    sni: sniInput.value,
+    extraParams: extraParams.value
+  };
+
+  const href = generateHysteria2Uri(lastParsed, settings);
+  showResult(href);
+
+  // Save history
+  const entry = {
+    id: Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+    inputLink: inputLink.value.trim(),
+    outputLink: href,
+    parsed: lastParsed,
+    settings: {
+      speed: settings.speed,
+      fastOpen: settings.fastOpen,
+      sni: settings.sni,
+      extraParams: settings.extraParams
+    },
+    createdAt: Date.now()
+  };
+  saveHistoryEntry(entry);
+  renderHistory();
+
+  // Save last SNI
+  if (lastParsed.sni) storageSet(SNI_KEY, lastParsed.sni);
+
+  showNotification('✅ Hysteria2 ссылка сгенерирована!', false);
+}
+
+/* ============ PARSE TRIGGER ============ */
+function triggerParse() {
+  clearError();
+  const raw = inputLink.value.trim();
+  btnConvert.disabled = true;
+  previewSection.classList.add('hidden');
+  previewSection.classList.remove('fade-enter');
+  resultSection.classList.add('hidden');
+  resultSection.classList.remove('fade-enter');
+  lastParsed = null;
+
+  if (!raw) {
+    inputLink.classList.remove('filled');
+    return;
+  }
+
+  inputLink.classList.add('filled');
+
+  const result = parseVlessXHttp(raw);
+  if (result.error) {
+    showError(result.error);
+    return;
+  }
+
+  lastParsed = result.parsed;
+  // Auto-fill SNI if available and user hasn't manually set one
+  const currentSni = sniInput.value.trim();
+  if (result.parsed.sni && !currentSni) {
+    sniInput.value = result.parsed.sni;
+  } else if (result.parsed.host && !currentSni && !result.parsed.sni) {
+    // try last saved SNI
+    const lastSni = storageGet(SNI_KEY, '');
+    if (lastSni) sniInput.value = lastSni;
+  }
+
+  populatePreview(result.parsed);
+  btnConvert.disabled = false;
+}
+
+/* ============ CLIPBOARD ============ */
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      showCopiedFeedback();
+    }).catch(function() {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showCopiedFeedback();
+  } catch { showNotification('❌ Не удалось скопировать', true); }
+  document.body.removeChild(ta);
+}
+
+let copyTimeout = null;
+function showCopiedFeedback() {
+  btnCopy.classList.add('copied');
+  btnCopy.textContent = '✅ Скопировано!';
+  copyFeedback.classList.remove('hidden');
+  clearTimeout(copyTimeout);
+  copyTimeout = setTimeout(function() {
+    btnCopy.classList.remove('copied');
+    btnCopy.textContent = '📋 Копировать';
+    copyFeedback.classList.add('hidden');
+  }, 2000);
+}
+
+/* ============ SETTINGS PERSISTENCE ============ */
+function loadSettings() {
+  const s = storageGet(SETTINGS_KEY, null);
+  if (s) {
+    speedRange.value = Math.max(50, Math.min(2000, s.speed || 500));
+    speedValue.textContent = speedRange.value;
+    fastOpenToggle.checked = s.fastOpen !== undefined ? s.fastOpen : true;
+  }
+  // Load last SNI
+  const lastSni = storageGet(SNI_KEY, '');
+  if (lastSni && !sniInput.value.trim()) sniInput.value = lastSni;
+}
+
+function saveSettings() {
+  storageSet(SETTINGS_KEY, {
+    speed: parseInt(speedRange.value, 10) || 500,
+    fastOpen: fastOpenToggle.checked
+  });
+}
+
+/* ============ EVENT BINDING ============ */
+// Parse on input with debounce
+let parseDebounce = null;
+inputLink.addEventListener('input', function() {
+  clearTimeout(parseDebounce);
+  parseDebounce = setTimeout(triggerParse, 300);
+});
+
+// Convert button
+btnConvert.addEventListener('click', doConvert);
+
+// Copy button
+btnCopy.addEventListener('click', function() {
+  const text = resultLink.textContent;
+  if (text && text.startsWith('hysteria2://')) {
+    copyToClipboard(text);
+  }
+});
+
+// Settings save on change
+speedRange.addEventListener('input', function() {
+  speedValue.textContent = speedRange.value;
+  saveSettings();
+});
+
+fastOpenToggle.addEventListener('change', saveSettings);
+
+// Extra params and SNI save on change (debounced)
+let settingsDebounce = null;
+function debouncedSaveSettings() {
+  clearTimeout(settingsDebounce);
+  settingsDebounce = setTimeout(saveSettings, 500);
+}
+sniInput.addEventListener('input', debouncedSaveSettings);
+extraParams.addEventListener('input', debouncedSaveSettings);
+
+// Clear history
+btnClearHistory.addEventListener('click', function() {
+  clearHistory();
+});
+
+// Keyboard: Enter to convert (when input focused)
+inputLink.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !btnConvert.disabled) {
+    e.preventDefault();
+    doConvert();
+  }
+});
+
+// Notification close on click
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.notification')) {
+    e.target.remove();
+  }
+});
+
+/* ============ INIT ============ */
+loadSettings();
+renderHistory();
+
+// Auto-detect paste via input listener (already set above)
+
+console.log('⚡ VLESS → Hysteria2 Converter loaded');
+console.log('🐀 made by shnyr');
+})();
+</script>
+</body>
+</html>
