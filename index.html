@@ -3,337 +3,309 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
 <title>⚡ VLESS → Hysteria2 Converter</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0a0a0f,#1a0a2e 40%,#0a0a0f);color:#e0e0e0;font-family:'Inter','Segoe UI',sans-serif;display:flex;justify-content:center;align-items:center;padding:16px}
+body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0a0a0f,#1a0a2e 40%,#0a0a0f);color:#e0e0e0;font-family:'Inter','Segoe UI',sans-serif;display:flex;justify-content:center;align-items:center;padding:16px;position:relative}
+body::before{content:'';position:fixed;inset:0;background:url('https://images.unsplash.com/photo-1432251407527-504a6b4174a2?q=80&w=1480&auto=format&fit=crop') center/cover;opacity:.04;z-index:-2;animation:moveBg 120s linear infinite}
+@keyframes moveBg{0%{transform:scale(1) translate(0,0)}50%{transform:scale(1.05) translate(-10px,-10px)}100%{transform:scale(1) translate(0,0)}}
 ::selection{background:rgba(0,255,65,.15);color:#00ff41}
 a{color:#00ff41;text-decoration:none}
 
-/* GLASS CONTAINER */
-.glass{
-  position:relative;
-  width:100%;max-width:560px;
-  border-radius:24px;
-  padding:28px;
-  overflow:hidden;
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  background:rgba(255,255,255,.06);
-  box-shadow:0 8px 32px rgba(0,0,0,.3),inset 2px 2px 1px rgba(255,255,255,.08),inset -1px -1px 1px rgba(255,255,255,.03);
-  transition:all .4s cubic-bezier(.175,.885,.32,2.2);
-}
-.glass::before{
-  content:'';position:absolute;inset:0;z-index:-1;
-  background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 50%);
-  border-radius:inherit;
-}
-.glass:hover{box-shadow:0 12px 48px rgba(0,0,0,.4),inset 2px 2px 1px rgba(255,255,255,.1)}
+/* SVG FILTER */
+.glass-filter{position:absolute;width:0;height:0;overflow:hidden}
+
+/* GLASS */
+.glass{position:relative;width:100%;max-width:560px;border-radius:24px;overflow:hidden;isolation:isolate;transition:all .4s cubic-bezier(.175,.885,.32,2.2);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.glass-backdrop{position:absolute;inset:0;z-index:-3;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);background:rgba(255,255,255,.04);border-radius:24px}
+.glass-distortion{position:absolute;inset:0;z-index:-2;filter:url(#glass-distortion);overflow:hidden;border-radius:24px}
+.glass-highlight{position:absolute;inset:0;z-index:-1;border-radius:24px;background:rgba(255,255,255,.05);box-shadow:inset 2px 2px 1px 0 rgba(255,255,255,.25),inset -1px -1px 1px 1px rgba(255,255,255,.08);pointer-events:none;transition:.3s}
+.glass-content{position:relative;z-index:1;padding:28px}
+.glass:hover{transform:translateY(-1px)}
+.glass:hover .glass-highlight{background:rgba(255,255,255,.08)}
+
+/* CARDS */
+.card{padding:14px 16px;margin-bottom:14px;border-radius:14px;background:rgba(0,0,0,.2);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.04)}
 
 /* HEADER */
 .header{text-align:center;margin-bottom:20px}
 .header h1{font-family:'JetBrains Mono','Fira Code',monospace;font-size:clamp(1.2rem,4vw,1.6rem);color:#00ff41;text-shadow:0 0 20px rgba(0,255,65,.3);margin-bottom:4px}
-.header p{font-size:13px;color:rgba(255,255,255,.45)}
-
-/* CARDS INSIDE GLASS */
-.card{padding:14px 16px;margin-bottom:12px;border-radius:14px;background:rgba(255,255,255,.04);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.06)}
+.header p{font-size:13px;color:rgba(255,255,255,.35)}
 
 /* INPUT */
-.input-link{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(0,255,65,.2);background:rgba(0,0,0,.35);color:#e0e0e0;font-size:14px;font-family:'JetBrains Mono',monospace;outline:none;transition:.3s}
-.input-link:focus{border-color:rgba(0,255,65,.6);box-shadow:0 0 16px rgba(0,255,65,.12)}
-.input-link::placeholder{color:rgba(255,255,255,.2);font-size:13px}
+.input-link{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(0,255,65,.15);background:rgba(0,0,0,.3);color:#e0e0e0;font-size:14px;font-family:'JetBrains Mono',monospace;outline:none;transition:.3s}
+.input-link:focus{border-color:rgba(0,255,65,.5);box-shadow:0 0 16px rgba(0,255,65,.1)}
 
 /* BUTTONS */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 24px;border-radius:14px;border:none;cursor:pointer;font-weight:600;font-size:14px;transition:all .4s cubic-bezier(.175,.885,.32,2.2);background:rgba(255,255,255,.12);color:#fff;backdrop-filter:blur(4px)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 24px;border-radius:14px;border:none;cursor:pointer;font-weight:600;font-size:14px;transition:all .4s cubic-bezier(.175,.885,.32,2.2);background:rgba(255,255,255,.08);color:#fff;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .btn:hover{transform:scale(1.02)}.btn:active{transform:scale(.96)}
 .btn-primary{background:linear-gradient(135deg,#00ff41,#00cc33);color:#000;box-shadow:0 0 20px rgba(0,255,65,.2)}
 .btn-primary:hover{box-shadow:0 0 32px rgba(0,255,65,.35)}
-.btn-copy{background:rgba(0,212,255,.15);color:#00d4ff;border:1px solid rgba(0,212,255,.2)}
-.btn-copy:hover{background:rgba(0,212,255,.25)}
+.btn-copy{background:rgba(0,212,255,.12);color:#00d4ff;border:1px solid rgba(0,212,255,.15)}
+.btn-copy:hover{background:rgba(0,212,255,.2)}
 .btn-sm{padding:6px 14px;font-size:12px;border-radius:10px}
 
-/* RESULT BOX */
+/* RESULT */
 .result-box{background:rgba(0,0,0,.35);border-radius:12px;padding:12px;word-break:break-all;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.5;color:#00ff41;margin-bottom:8px;position:relative}
 .result-box .copied-badge{position:absolute;top:8px;right:8px;background:#00ff41;color:#000;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;animation:fadeIn .3s}
 
-/* FORM ROWS */
-.form-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
-.form-row label{font-size:13px;color:rgba(255,255,255,.6);min-width:100px}
-.form-row label .hint{font-size:11px;color:rgba(255,255,255,.3);display:block;font-weight:400}
-.form-row input[type="range"]{flex:1;min-width:100px;accent-color:#00ff41;height:4px;cursor:pointer}
+/* FORM */
+.form-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.form-row label{font-size:13px;color:rgba(255,255,255,.55);min-width:95px}
+.form-row label .hint{font-size:11px;color:rgba(255,255,255,.25);display:block;font-weight:400}
+.form-row input[type="range"]{flex:1;min-width:80px;accent-color:#00ff41;height:4px;cursor:pointer}
 .form-row .val{font-family:'JetBrains Mono',monospace;font-size:13px;color:#00ff41;min-width:40px;text-align:right}
-.form-row select{background:rgba(0,0,0,.35);border:1px solid rgba(0,255,65,.2);border-radius:8px;padding:6px 10px;color:#e0e0e0;font-size:13px;outline:none;cursor:pointer}
-.form-row select:focus{border-color:rgba(0,255,65,.5)}
+.form-row select,.form-row input[type="text"]{background:rgba(0,0,0,.3);border:1px solid rgba(0,255,65,.15);border-radius:8px;padding:6px 10px;color:#e0e0e0;font-size:13px;outline:none;cursor:pointer;font-family:'JetBrains Mono',monospace;flex:1}
+.form-row select:focus,.form-row input[type="text"]:focus{border-color:rgba(0,255,65,.4)}
 
 /* TOGGLE */
-.toggle{position:relative;display:inline-block;width:44px;height:24px;cursor:pointer}
+.toggle{position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,.12);border-radius:24px;transition:.3s}
+.toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:24px;transition:.3s}
 .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
 .toggle input:checked+.toggle-slider{background:#00ff41}
 .toggle input:checked+.toggle-slider::before{transform:translateX(20px);background:#000}
 
-/* PARSED DATA */
+/* HELP */
+.help-icon{display:inline-flex;width:18px;height:18px;border-radius:50%;background:rgba(0,212,255,.15);color:#00d4ff;font-size:11px;cursor:help;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.help-icon:hover .help-text{opacity:1;visibility:visible}
+.help-text{position:absolute;bottom:calc(100%+8px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.95);color:#e0e0e0;font-size:11px;padding:8px 12px;border-radius:8px;white-space:nowrap;opacity:0;visibility:hidden;transition:.2s;z-index:20;font-weight:400;font-family:'Inter',sans-serif;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.06);pointer-events:none;max-width:280px}
+.help-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:rgba(0,0,0,.95)}
+
+/* PARSED GRID */
 .parsed-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.parsed-item{background:rgba(0,0,0,.25);border-radius:8px;padding:6px 10px}
-.parsed-item .key{font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px}
+.parsed-item{background:rgba(0,0,0,.2);border-radius:8px;padding:6px 10px}
+.parsed-item .key{font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.5px}
 .parsed-item .val{font-family:'JetBrains Mono',monospace;font-size:13px;color:#e0e0e0;word-break:break-all}
 
-/* HISTORY */
-.history-item{background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;margin-bottom:4px;font-size:11px;cursor:pointer;transition:.2s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.history-item:hover{background:rgba(0,255,65,.06)}
-.history-item .h-date{color:rgba(255,255,255,.3);font-size:10px}
-
-/* TOOLTIP / HELP */
-.help-icon{display:inline-flex;width:18px;height:18px;border-radius:50%;background:rgba(0,212,255,.2);color:#00d4ff;font-size:11px;cursor:help;align-items:center;justify-content:center;margin-left:4px;position:relative;flex-shrink:0}
-.help-icon:hover .help-text{opacity:1;visibility:visible}
-.help-text{position:absolute;bottom:calc(100%+6px);left:50%;transform:translateX(-50%);background:rgba(0,0,0,.9);color:#e0e0e0;font-size:11px;padding:6px 10px;border-radius:8px;white-space:nowrap;opacity:0;visibility:hidden;transition:.2s;z-index:10;font-weight:400;font-family:'Inter',sans-serif;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08)}
-.help-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:rgba(0,0,0,.9)}
-
-/* ACCORDION SETTINGS */
+/* ACCORDION */
 .accordion-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;padding:4px 0}
-.accordion-header .arrow{transition:transform .3s;font-size:14px}
+.accordion-header .arrow{transition:transform .3s;font-size:14px;color:rgba(255,255,255,.3)}
 .accordion-header.open .arrow{transform:rotate(180deg)}
-.accordion-body{overflow:hidden;max-height:0;transition:max-height .4s}
-.accordion-body.open{max-height:600px}
+.accordion-body{overflow:hidden;max-height:0;transition:max-height .4s ease-out}
+.accordion-body.open{max-height:800px}
+
+/* HISTORY */
+.history-item{background:rgba(0,0,0,.15);border-radius:8px;padding:8px 10px;margin-bottom:4px;font-size:11px;cursor:pointer;transition:.2s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-item:hover{background:rgba(0,255,65,.06)}
+.history-item .h-date{color:rgba(255,255,255,.25);font-size:10px;margin-right:6px}
+
+/* NOTIFICATION */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-60px);background:#00ff41;color:#000;padding:10px 20px;border-radius:12px;font-weight:600;font-size:13px;z-index:100;opacity:0;transition:all .3s cubic-bezier(.175,.885,.32,2.2);pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ANIMATIONS */
 @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeIn .3s ease-out}
 
-/* MOBILE */
 @media(max-width:480px){
-  .glass{padding:16px;border-radius:16px}
+  .glass-content{padding:16px}
   .parsed-grid{grid-template-columns:1fr}
-  .form-row label{min-width:80px;font-size:12px}
+  .form-row label{min-width:75px;font-size:12px}
+  .form-row label .hint{display:none}
+  .help-text{white-space:normal;max-width:200px}
 }
 </style>
 </head>
 <body>
 
-<div class="glass" id="app">
-  <div class="header">
-    <h1>⚡ CONVERTER</h1>
-    <p>VLESS / XHTTP → Hysteria2</p>
-  </div>
+<!-- SVG Glass Filter -->
+<svg class="glass-filter" aria-hidden="true">
+  <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
+    <feTurbulence type="fractalNoise" baseFrequency="0.001 0.005" numOctaves="1" seed="17" result="turbulence"/>
+    <feComponentTransfer in="turbulence" result="mapped">
+      <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5"/>
+      <feFuncG type="gamma" amplitude="0" exponent="1" offset="0"/>
+      <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5"/>
+    </feComponentTransfer>
+    <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap"/>
+    <feSpecularLighting in="softMap" surfaceScale="5" specularConstant="1" specularExponent="100" lightingColor="white" result="specLight">
+      <fePointLight x="-200" y="-200" z="300"/>
+    </feSpecularLighting>
+    <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litImage"/>
+    <feDisplacementMap in="SourceGraphic" in2="softMap" scale="200" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 
-  <!-- INPUT -->
-  <div class="card">
-    <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:6px">Вставьте ссылку VLESS или XHTTP:</div>
-    <input class="input-link" id="linkInput" placeholder="vless://xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx@host:443?encryption=none&type=tcp&security=reality&..." value="">
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn btn-primary" onclick="convert()" style="flex:1">🔄 КОНВЕРТИРОВАТЬ</button>
+<div id="toast" class="toast"></div>
+
+<div class="glass">
+  <div class="glass-backdrop"></div>
+  <div class="glass-distortion"></div>
+  <div class="glass-highlight"></div>
+
+  <div class="glass-content">
+    <div class="header">
+      <h1>⚡ CONVERTER</h1>
+      <p>VLESS / XHTTP → Hysteria2</p>
     </div>
-  </div>
 
-  <!-- PARSED DATA -->
-  <div id="parsedSection" style="display:none">
+    <!-- INPUT -->
     <div class="card">
-      <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:8px">📄 Распарсенные данные:</div>
-      <div class="parsed-grid" id="parsedData"></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:6px">Вставьте ссылку VLESS или XHTTP:</div>
+      <input class="input-link" id="linkInput" placeholder="vless://xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx@host:443?..." value="">
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-primary" onclick="convert()" style="flex:1">🔄 КОНВЕРТИРОВАТЬ</button>
+      </div>
     </div>
-  </div>
 
-  <!-- RESULT -->
-  <div id="resultSection" style="display:none">
+    <!-- PARSED -->
+    <div id="parsedSection" style="display:none">
+      <div class="card">
+        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:8px">📄 Распарсенные данные:</div>
+        <div class="parsed-grid" id="parsedData"></div>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="resultSection" style="display:none">
+      <div class="card">
+        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:6px">🔗 Hysteria2 ссылка:</div>
+        <div class="result-box" id="resultLink">—</div>
+        <button class="btn btn-copy" onclick="copyResult()" style="width:100%">📋 КОПИРОВАТЬ</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
     <div class="card">
-      <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:6px">🔗 Hysteria2 ссылка:</div>
-      <div class="result-box" id="resultLink">—</div>
-      <button class="btn btn-copy" onclick="copyResult()" style="width:100%">📋 КОПИРОВАТЬ</button>
+      <div class="accordion-header" onclick="toggleSettings()" id="settingsHead">
+        <span style="font-size:12px;color:rgba(255,255,255,.35)">⚙ Параметры</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="accordion-body" id="settingsBody">
+
+        <!-- Speed -->
+        <div class="form-row" style="margin-top:10px">
+          <label>Скорость <span class="hint">Пропускная способность</span></label>
+          <input type="range" id="speedSlider" min="50" max="2000" value="500" step="10" oninput="onSpeedChange()">
+          <span class="val" id="speedVal">500</span>
+          <span class="help-icon">?<span class="help-text">Максимальная скорость вашего интернета в Мбит/с. Клиент Hysteria подстроит нагрузку. Для 500 Мбит/с ставьте 500.</span></span>
+        </div>
+
+        <!-- Fast Open -->
+        <div class="form-row">
+          <label>Fast Open <span class="hint">Ускорение соединения</span></label>
+          <label class="toggle"><input type="checkbox" id="fastOpenToggle" checked onchange="onFastOpenChange()"><span class="toggle-slider"></span></label>
+          <span style="font-size:12px;color:rgba(255,255,255,.35)" id="fastOpenLabel">вкл</span>
+          <span class="help-icon">?<span class="help-text">TCP Fast Open. Сокращает время handshake при установке соединения. Рекомендуется включить. Отключайте только если наблюдаются проблемы с подключением.</span></span>
+        </div>
+
+        <!-- SNI -->
+        <div class="form-row">
+          <label>SNI <span class="hint">Серверное имя (TLS)</span></label>
+          <input type="text" id="sniInput" placeholder="авто (из ссылки)" oninput="debounceUpdate()">
+          <span class="help-icon">?<span class="help-text">Server Name Indication — домен для проверки TLS-сертификата. Обычно совпадает с адресом сервера. Если не указать — подставится автоматически из ссылки.</span></span>
+        </div>
+
+        <!-- ALPN -->
+        <div class="form-row">
+          <label>ALPN <span class="hint">Протокол (h3/h2)</span></label>
+          <select id="alpnSelect" onchange="debounceUpdate()">
+            <option value="h3">h3 (QUIC)</option>
+            <option value="h3,h2">h3, h2 (совместимый)</option>
+            <option value="h2">h2 (HTTP/2)</option>
+          </select>
+          <span class="help-icon">?<span class="help-text">Application-Layer Protocol Negotiation. h3 (QUIC/HTTP3) — оптимальный выбор для Hysteria2. h3,h2 — если хотите совместимость с более старыми протоколами.</span></span>
+        </div>
+
+        <!-- Obfs -->
+        <div class="form-row">
+          <label>Обфускация <span class="hint">Маскировка трафика</span></label>
+          <select id="obfsSelect" onchange="debounceUpdate()">
+            <option value="">Нет (none)</option>
+            <option value="salamander">Salamander</option>
+          </select>
+          <span class="help-icon">?<span class="help-text">Маскировка Hysteria2 под обычный трафик. По умолчанию не требуется. Salamander — если провайдер режет QUIC-соединения.</span></span>
+        </div>
+
+        <!-- Insecure -->
+        <div class="form-row">
+          <label>Без TLS <span class="hint">Отключить проверку</span></label>
+          <label class="toggle"><input type="checkbox" id="insecureToggle" onchange="debounceUpdate()"><span class="toggle-slider"></span></label>
+          <span style="font-size:12px;color:rgba(255,255,255,.35)" id="insecureLabel">выкл</span>
+          <span class="help-icon">?<span class="help-text">Отключение проверки TLS-сертификата (insecure=1). Нужно только если сертификат самоподписанный. Для Remnawave оставлять выключенным (insecure=0).</span></span>
+        </div>
+
+        <!-- Custom -->
+        <div class="form-row" style="flex-direction:column;align-items:stretch">
+          <label>Доп. параметры <span class="hint">key=value через &</span></label>
+          <textarea id="customParams" rows="2" style="width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(0,255,65,.15);border-radius:8px;padding:6px 10px;color:#e0e0e0;font-size:12px;font-family:'JetBrains Mono',monospace;outline:none;resize:vertical" placeholder="например: downloadTimeout=30" oninput="debounceUpdate()"></textarea>
+        </div>
+
+      </div>
     </div>
-  </div>
 
-  <!-- SETTINGS + HELP -->
-  <div class="card">
-    <div class="accordion-header" id="settingsToggle" onclick="toggleSettings()">
-      <span style="font-size:12px;color:rgba(255,255,255,.45)">⚙ Параметры и справка</span>
-      <span class="arrow">▼</span>
+    <!-- HISTORY -->
+    <div class="card" id="historySection" style="display:none">
+      <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:6px">📜 История (последние 5):</div>
+      <div id="historyList"></div>
     </div>
-    <div class="accordion-body" id="settingsBody">
 
-      <!-- Speed -->
-      <div class="form-row" style="margin-top:10px">
-        <label>Скорость (Мбит/с)
-          <span class="hint">Задаёт пропускную способность канала</span>
-        </label>
-        <input type="range" id="speedSlider" min="50" max="2000" value="500" step="10" oninput="updateSpeed()">
-        <span class="val" id="speedVal">500</span>
-        <span class="help-icon">?<span class="help-text">Укажите реальную скорость вашего интернета. Клиент Hysteria подстроит нагрузку. 50-2000 Мбит/с.</span></span>
-      </div>
-
-      <!-- Fast Open -->
-      <div class="form-row">
-        <label>Fast Open
-          <span class="hint">Ускоряет установку соединения</span>
-        </label>
-        <label class="toggle">
-          <input type="checkbox" id="fastOpenToggle" checked onchange="updateFastOpen()">
-          <span class="toggle-slider"></span>
-        </label>
-        <span style="font-size:12px;color:rgba(255,255,255,.4)" id="fastOpenLabel">вкл</span>
-        <span class="help-icon">?<span class="help-text">TCP Fast Open — сокращает время handshake. Рекомендуется включить. Отключать только если проблемы с соединением.</span></span>
-      </div>
-
-      <!-- SNI -->
-      <div class="form-row">
-        <label>SNI
-          <span class="hint">Серверное имя для TLS</span>
-        </label>
-        <input type="text" id="sniInput" style="flex:1;background:rgba(0,0,0,.35);border:1px solid rgba(0,255,65,.2);border-radius:8px;padding:6px 10px;color:#e0e0e0;font-size:13px;font-family:'JetBrains Mono',monospace;outline:none" placeholder="авто" oninput="updateParams()">
-        <span class="help-icon">?<span class="help-text">Server Name Indication — домен для проверки TLS-сертификата. Обычно совпадает с адресом сервера. Заполняется автоматически из ссылки.</span></span>
-      </div>
-
-      <!-- alpn -->
-      <div class="form-row">
-        <label>ALPN
-          <span class="hint">Протокол прикладного уровня</span>
-        </label>
-        <select id="alpnSelect" onchange="updateParams()">
-          <option value="h3">h3 (QUIC/HTTP3)</option>
-          <option value="h3,h2">h3,h2</option>
-          <option value="h2">h2</option>
-        </select>
-        <span class="help-icon">?<span class="help-text">Application-Layer Protocol Negotiation. h3 — оптимальный выбор для Hysteria2 (QUIC). h3,h2 — если нужна совместимость.</span></span>
-      </div>
-
-      <!-- obfs -->
-      <div class="form-row">
-        <label>Обфускация
-          <span class="hint">Маскировка трафика</span>
-        </label>
-        <select id="obfsSelect" onchange="updateParams()">
-          <option value="">Нет (none)</option>
-          <option value="salamander">Salamander</option>
-        </select>
-        <span class="help-icon">?<span class="help-text">Обфускация маскирует Hysteria2 под обычный трафик. По умолчанию не нужна. Salamander — если провайдер режет QUIC.</span></span>
-      </div>
-
-      <!-- insecure -->
-      <div class="form-row">
-        <label>Проверка TLS
-          <span class="hint">Безопасность соединения</span>
-        </label>
-        <label class="toggle">
-          <input type="checkbox" id="insecureToggle" onchange="updateParams()">
-          <span class="toggle-slider"></span>
-        </label>
-        <span style="font-size:12px;color:rgba(255,255,255,.4)" id="insecureLabel">выкл</span>
-        <span class="help-icon">?<span class="help-text">Отключение проверки TLS-сертификата (insecure=1). Нужно только если сертификат самоподписанный. Для Remnawave оставлять выключенным.</span></span>
-      </div>
-
-      <!-- Custom params -->
-      <div class="form-row" style="flex-direction:column;align-items:stretch">
-        <label>Доп. параметры
-          <span class="hint">Кастомные key=value через &</span>
-        </label>
-        <textarea id="customParams" rows="2" style="width:100%;background:rgba(0,0,0,.35);border:1px solid rgba(0,255,65,.2);border-radius:8px;padding:6px 10px;color:#e0e0e0;font-size:12px;font-family:'JetBrains Mono',monospace;outline:none;resize:vertical" placeholder="например: downloadTimeout=30" oninput="updateParams()"></textarea>
-      </div>
-
+    <div style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,.15)">
+      🏗️ Architect · 🎨 UI/UX · 💻 Developer · 🧪 QA · ☸️ DevOps
     </div>
-  </div>
 
-  <!-- HISTORY -->
-  <div class="card" id="historySection" style="display:none">
-    <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:6px">📜 История (последние 5):</div>
-    <div id="historyList"></div>
-  </div>
-
-  <div style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,.2)">
-    Made by 🏗️ Architect · 🎨 UI/UX · 💻 Developer · 🧪 QA · ☸️ DevOps
   </div>
 </div>
 
 <script>
-// ===== PARSE VLESS/XHTTP LINK =====
+// ===== PARSE =====
 function parseLink(url){
-  const r = {uuid:'',host:'',port:443,type:'tcp',encryption:'none',sni:'',fp:'',pbk:'',sid:'',spx:'',path:'',security:'',mode:'',extra:''};
-  if(!url) return null;
-  // Remove fragment
+  const r={uuid:'',host:'',port:443,type:'tcp',encryption:'none',sni:'',fp:'',pbk:'',sid:'',spx:'',path:'',security:'',mode:'',extra:''};
+  if(!url)return null;
   url=url.split('#')[0];
-
-  // Match vless://UUID@host:port
-  const main = url.match(/^vless:\/\/([a-f0-9-]+)@([^:]+):(\d+)(?:\?(.*))?$/i);
-  if(!main) return null;
-
-  r.uuid=main[1]; r.host=main[2]; r.port=main[3];
-  const qs = main[4]||'';
-
-  const params = new URLSearchParams(qs);
-  r.type=params.get('type')||'tcp';
-  r.encryption=params.get('encryption')||'none';
-  r.sni=params.get('sni')||'';
-  r.fp=params.get('fp')||'';
-  r.pbk=params.get('pbk')||'';
-  r.sid=params.get('sid')||'';
-  r.spx=params.get('spx')||'';
-  r.path=params.get('path')||'';
-  r.security=params.get('security')||'';
-  r.mode=params.get('mode')||'';
-  r.extra=params.get('extra')||'';
+  const m=url.match(/^vless:\/\/([a-f0-9-]+)@([^:]+):(\d+)(?:\?(.*))?$/i);
+  if(!m)return null;
+  r.uuid=m[1];r.host=m[2];r.port=m[3];
+  try{const p=new URLSearchParams(m[4]||'');r.type=p.get('type')||'tcp';r.encryption=p.get('encryption')||'none';r.sni=p.get('sni')||'';r.fp=p.get('fp')||'';r.pbk=p.get('pbk')||'';r.sid=p.get('sid')||'';r.spx=p.get('spx')||'';r.path=p.get('path')||'';r.security=p.get('security')||'';r.mode=p.get('mode')||'';r.extra=p.get('extra')||'';}catch(e){}
   return r;
 }
 
-function buildHysteria(parsed,speed,fastOpen,sni,alpn,obfs,insecure,custom){
-  if(!parsed) return '';
-  const host = parsed.host;
-  const port = parsed.port;
-  const uuid = parsed.uuid;
-  const useSni = sni || parsed.sni || host;
-
-  const params = [];
-  if(insecure) params.push('insecure=1');
-  else params.push('insecure=0');
-  if(useSni) params.push('sni='+encodeURIComponent(useSni));
-  if(alpn) params.push('alpn='+encodeURIComponent(alpn));
-  if(fastOpen) params.push('fast_open=true');
-  if(obfs) params.push('obfs='+encodeURIComponent(obfs));
-  params.push('downmbps='+speed);
-  params.push('upmbps='+speed);
-  if(custom&&custom.trim()) params.push(custom.trim());
-  return `hysteria2://${uuid}@${host}:${port}/?${params.join('&')}`;
+function buildHysteria(p,speed,fastOpen,sni,alpn,obfs,insecure,custom){
+  if(!p)return'';
+  const host=p.host,port=p.port,uuid=p.uuid,sniVal=sni||p.sni||host;
+  const params=[];
+  params.push(insecure?'insecure=1':'insecure=0');
+  if(sniVal)params.push('sni='+encodeURIComponent(sniVal));
+  if(alpn)params.push('alpn='+encodeURIComponent(alpn));
+  if(fastOpen)params.push('fast_open=true');
+  if(obfs)params.push('obfs='+encodeURIComponent(obfs));
+  params.push('downmbps='+speed,'upmbps='+speed);
+  if(custom&&custom.trim())params.push(custom.trim());
+  return 'hysteria2://'+uuid+'@'+host+':'+port+'/?'+params.join('&');
 }
 
-// ===== UI =====
-let lastParsed = null;
+let lastParsed=null,updateTimer=null;
+
+function debounceUpdate(){clearTimeout(updateTimer);updateTimer=setTimeout(convert,300)}
 
 function convert(){
-  const input = document.getElementById('linkInput').value.trim();
-  const parsed = parseLink(input);
-  if(!parsed){
-    document.getElementById('resultLink').textContent='❌ Не удалось распарсить ссылку. Убедитесь что это VLESS/XHTTP формат.';
+  const inp=document.getElementById('linkInput').value.trim();
+  const p=parseLink(inp);
+  if(!p){
+    document.getElementById('resultLink').textContent='❌ Неверный формат. Вставьте VLESS или XHTTP ссылку.';
     document.getElementById('resultSection').style.display='block';
     document.getElementById('parsedSection').style.display='none';
     return;
   }
-  lastParsed = parsed;
+  lastParsed=p;
+  const sniInp=document.getElementById('sniInput');
+  if(!sniInp.value&&p.sni)sniInp.value=p.sni;
+  else if(!sniInp.value)sniInp.value=p.host;
 
-  // Auto-fill SNI
-  const sniInput = document.getElementById('sniInput');
-  if(!sniInput.value && parsed.sni) sniInput.value=parsed.sni;
-  else if(!sniInput.value) sniInput.value=parsed.host;
+  const speed=parseInt(document.getElementById('speedSlider').value);
+  const fastOpen=document.getElementById('fastOpenToggle').checked;
+  const sni=sniInp.value;
+  const alpn=document.getElementById('alpnSelect').value;
+  const obfs=document.getElementById('obfsSelect').value;
+  const insecure=document.getElementById('insecureToggle').checked;
+  const custom=document.getElementById('customParams').value;
 
-  const speed = parseInt(document.getElementById('speedSlider').value);
-  const fastOpen = document.getElementById('fastOpenToggle').checked;
-  const sni = sniInput.value;
-  const alpn = document.getElementById('alpnSelect').value;
-  const obfs = document.getElementById('obfsSelect').value;
-  const insecure = document.getElementById('insecureToggle').checked;
-  const custom = document.getElementById('customParams').value;
-
-  const hysteria = buildHysteria(parsed,speed,fastOpen,sni,alpn,obfs,insecure,custom);
-
-  document.getElementById('resultLink').innerHTML = hysteria;
+  const url=buildHysteria(p,speed,fastOpen,sni,alpn,obfs,insecure,custom);
+  document.getElementById('resultLink').innerHTML=url;
   document.getElementById('resultSection').style.display='block';
-
-  // Show parsed data
-  showParsed(parsed);
-
-  // Save history
-  saveHistory(input,hysteria);
-
-  // Scroll to result
-  document.getElementById('resultSection').scrollIntoView({behavior:'smooth',block:'center'});
+  showParsed(p);
+  saveHistory(inp,url);
 }
 
 function showParsed(p){
@@ -350,83 +322,40 @@ function showParsed(p){
 }
 
 function copyResult(){
-  const text = document.getElementById('resultLink').textContent;
-  if(!text||text.startsWith('❌')) return;
-  navigator.clipboard.writeText(text).then(()=>{
-    const btn = document.querySelector('.btn-copy');
-    const old = btn.innerHTML;
-    btn.innerHTML = '✅ СКОПИРОВАНО!';
-    setTimeout(()=>btn.innerHTML=old,2000);
-  }).catch(()=>{
-    // Fallback select
-    const range = document.createRange();
-    range.selectNodeContents(document.getElementById('resultLink'));
-    const sel = window.getSelection();
-    sel.removeAllRanges(); sel.addRange(range);
+  const t=document.getElementById('resultLink').textContent;
+  if(!t||t.startsWith('❌'))return;
+  navigator.clipboard.writeText(t).then(()=>showToast('✅ Ссылка скопирована!')).catch(()=>{
+    const r=document.createRange();r.selectNodeContents(document.getElementById('resultLink'));
+    const s=window.getSelection();s.removeAllRanges();s.addRange(r);showToast('✅ Выделите и скопируйте');
   });
 }
 
 // ===== SETTINGS =====
-function updateSpeed(){
-  const v = document.getElementById('speedSlider').value;
-  document.getElementById('speedVal').textContent=v;
-  localStorage.setItem('vlessConverter_speed',v);
-}
-function updateFastOpen(){
-  const c = document.getElementById('fastOpenToggle').checked;
-  document.getElementById('fastOpenLabel').textContent=c?'вкл':'выкл';
-  localStorage.setItem('vlessConverter_fastOpen',c?'1':'0');
-}
-
-function toggleSettings(){
-  const body = document.getElementById('settingsBody');
-  const header = document.getElementById('settingsToggle');
-  body.classList.toggle('open');
-  header.classList.toggle('open');
-}
-
-function updateParams(){}
+function onSpeedChange(){const v=document.getElementById('speedSlider').value;document.getElementById('speedVal').textContent=v;localStorage.setItem('vconv_speed',v)}
+function onFastOpenChange(){const c=document.getElementById('fastOpenToggle').checked;document.getElementById('fastOpenLabel').textContent=c?'вкл':'выкл';localStorage.setItem('vconv_fastopen',c?'1':'0')}
+function toggleSettings(){document.getElementById('settingsBody').classList.toggle('open');document.getElementById('settingsHead').classList.toggle('open')}
 
 // ===== HISTORY =====
-function saveHistory(input,result){
-  let hist = JSON.parse(localStorage.getItem('vlessConverter_history')||'[]');
-  hist.unshift({input,result,date:new Date().toLocaleString('ru')});
-  if(hist.length>5) hist=hist.slice(0,5);
-  localStorage.setItem('vlessConverter_history',JSON.stringify(hist));
-  renderHistory();
+function saveHistory(inp,res){
+  let h=JSON.parse(localStorage.getItem('vconv_history')||'[]');
+  h.unshift({input:inp,result:res,date:new Date().toLocaleString('ru')});
+  if(h.length>5)h=h.slice(0,5);localStorage.setItem('vconv_history',JSON.stringify(h));renderHistory();
 }
-
 function renderHistory(){
-  const hist = JSON.parse(localStorage.getItem('vlessConverter_history')||'[]');
-  const el = document.getElementById('historyList');
-  const section = document.getElementById('historySection');
-  if(!hist.length){section.style.display='none';return}
-  section.style.display='block';
-  el.innerHTML=hist.map((h,i)=>`
-    <div class="history-item" onclick="loadHistory(${i})" title="Нажмите чтобы загрузить">
-      <span class="h-date">${h.date}</span> ${h.input.substring(0,50)}…
-    </div>
-  `).join('');
+  const h=JSON.parse(localStorage.getItem('vconv_history')||'[]'),el=document.getElementById('historyList'),sec=document.getElementById('historySection');
+  if(!h.length){sec.style.display='none';return}
+  sec.style.display='block';el.innerHTML=h.map((x,i)=>'<div class="history-item" onclick="loadHistory('+i+')"><span class="h-date">'+x.date+'</span>'+x.input.substring(0,50)+'…</div>').join('');
 }
+function loadHistory(i){const h=JSON.parse(localStorage.getItem('vconv_history')||'[]');if(h[i])document.getElementById('linkInput').value=h[i].input;convert()}
 
-function loadHistory(i){
-  const hist = JSON.parse(localStorage.getItem('vlessConverter_history')||'[]');
-  if(hist[i]) document.getElementById('linkInput').value=hist[i].input;
-  convert();
-}
+// ===== TOAST =====
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
 
 // ===== INIT =====
 (function(){
-  // Restore settings
-  const s = localStorage.getItem('vlessConverter_speed');
-  if(s) document.getElementById('speedSlider').value=s;
-  document.getElementById('speedVal').textContent=document.getElementById('speedSlider').value;
-  const fo = localStorage.getItem('vlessConverter_fastOpen');
-  if(fo==='0'){document.getElementById('fastOpenToggle').checked=false;document.getElementById('fastOpenLabel').textContent='выкл'}
-  renderHistory();
-
-  // Settings open by default on desktop
-  if(window.innerWidth>480) toggleSettings();
+  const s=localStorage.getItem('vconv_speed');if(s)document.getElementById('speedSlider').value=s;document.getElementById('speedVal').textContent=document.getElementById('speedSlider').value;
+  const fo=localStorage.getItem('vconv_fastopen');if(fo==='0'){document.getElementById('fastOpenToggle').checked=false;document.getElementById('fastOpenLabel').textContent='выкл'}
+  renderHistory();if(window.innerWidth>480)toggleSettings();
 })();
 </script>
 </body>
