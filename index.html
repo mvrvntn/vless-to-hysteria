@@ -3,51 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'">
 <title>⚡ VLESS → Hysteria2 Converter</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Unbounded:wght@400;500;600;700&display=swap');
+
 /* ===== RESET ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{margin:0;background:#0d0d0d;color:#e0e0e0;font-family:'Inter',-apple-system,'Segoe UI','Roboto',sans-serif;font-size:clamp(0.875rem,2vw,1rem);line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{margin:0;background:#000000;color:#e0e0e0;font-family:'Inter',-apple-system,'Segoe UI','Roboto',sans-serif;font-size:clamp(0.875rem,2vw,1rem);line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 img,svg{display:block;max-width:100%}
 a{color:var(--color-lime);text-decoration:none}
 a:hover{text-decoration:underline}
 button{font-family:inherit}
 code,pre{font-family:'JetBrains Mono','Fira Code','Cascadia Code','Consolas',monospace}
 input,textarea,select{font-family:inherit}
-::selection{background:rgba(0,209,255,0.2);color:var(--color-lime)}
-::-moz-selection{background:rgba(0,209,255,0.2);color:var(--color-lime)}
+::selection{background:rgba(0,209,255,0.2);color:var(--neon-green)}
+::-moz-selection{background:rgba(0,209,255,0.2);color:var(--neon-green)}
 ::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:#0d0d0d}
+::-webkit-scrollbar-track{background:#000000}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:9999px}
 ::-webkit-scrollbar-thumb:hover{background:#6b6b7b}
-*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) #0d0d0d}
+*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) #000000}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.fade-enter,.fade-enter-fast,.fade-enter-slow,.pulse,.shake{animation:none!important;opacity:1!important;transform:none!important}.bg-circle{animation:none!important;opacity:.15!important}}
 
 /* ===== CSS VARIABLES ===== */
 :root{
---neon-green:#00D1FF;
---neon-green-dim:#00cc34;
---neon-cyan-soft:rgba(0,209,255,0.2);
---neon-cyan-glow:rgba(0,255,65,0.4);
---neon-cyan:#00f0ff;
---error-red:#ff3355;
---error-red-soft:rgba(255,51,85,0.15);
---error-bg:rgba(255,51,85,0.08);
---success-green:#00e676;
+--color-lime:#CCFF00;
+--neon-green:#CCFF00;
+--neon-green-dim:#99cc00;
+--neon-cyan-soft:rgba(0,209,255,0.15);
+--neon-cyan-glow:rgba(0,209,255,0.4);
+--neon-cyan:#00D1FF;
+--error-red:#FF2A55;
+--error-red-soft:rgba(255,42,85,0.15);
+--error-bg:rgba(255,42,85,0.08);
+--success-green:#CCFF00;
 --text-primary:#e0e0e0;
 --text-secondary:#9e9eb0;
 --text-muted:#6b6b7b;
 --text-heading:#ffffff;
---bg-primary:#0d0d0d;
---bg-secondary:#13131a;
---bg-card:#1a1a24;
---bg-input:#0a0a0f;
---bg-hover:#1e1e2e;
+--bg-primary:#000000;
+--bg-secondary:#050508;
+--bg-card:rgba(10,10,15,0.6);
+--bg-input:#050508;
+--bg-hover:rgba(255,255,255,0.04);
 --border-default:rgba(255,255,255,0.06);
 --border-hover:rgba(255,255,255,0.12);
---font-heading:'JetBrains Mono','Fira Code','Cascadia Code','Consolas',monospace;
+--font-heading:'Unbounded','Inter',-apple-system,sans-serif;
 --font-mono:'JetBrains Mono','Fira Code','Cascadia Code','Consolas',monospace;
 --font-body:'Inter',-apple-system,'Segoe UI','Roboto',sans-serif;
 --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;
@@ -62,17 +65,17 @@ input,textarea,select{font-family:inherit}
 --transition-spring:350ms cubic-bezier(0.34,1.56,0.64,1);
 
 /* ===== GLASS ===== */
---glass-bg:rgba(15,15,25,0.65);
---glass-blur:16px;
---glass-border-color:rgba(255,255,255,0.08);
---glass-shadow:0 8px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05);
---glass-accent-shadow:0 8px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05),0 0 12px rgba(0,255,65,0.08);
+--glass-bg:rgba(255,255,255,0.03);
+--glass-blur:24px;
+--glass-border-color:rgba(255,255,255,0.06);
+--glass-shadow:0 8px 32px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.03);
+--glass-accent-shadow:0 8px 32px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.03),0 0 16px rgba(204,255,0,0.15);
 
-/* ===== LIQUID ===== */
---liquid-filter:url(#liquidFilter);
---liquid-color:linear-gradient(135deg,var(--neon-green) 0%,var(--neon-green-dim) 50%,#00cc34 100%);
---liquid-shadow:0 2px 0 rgba(0,255,65,0.1),inset 0 1px 0 rgba(255,255,255,0.2),inset 0 -1px 0 rgba(0,0,0,0.3),0 4px 12px rgba(0,0,0,0.3);
---liquid-hover-shadow:0 4px 0 rgba(0,209,255,0.2),inset 0 1px 0 rgba(255,255,255,0.25),inset 0 -1px 0 rgba(0,0,0,0.25),0 8px 24px rgba(0,0,0,0.4),0 0 16px rgba(0,255,65,0.2);
+/* ===== LIQUID / ACCENT ===== */
+--liquid-filter:none;
+--liquid-color:linear-gradient(135deg,var(--neon-green) 0%,var(--neon-green-dim) 100%);
+--liquid-shadow:0 0 12px rgba(204,255,0,0.2),inset 0 1px 0 rgba(255,255,255,0.1);
+--liquid-hover-shadow:0 0 20px rgba(204,255,0,0.6),0 4px 16px rgba(0,0,0,0.5);
 
 /* ===== METAL ===== */
 --metal-shadow:0 3px 8px rgba(0,0,0,0.08);
@@ -105,9 +108,9 @@ h1 .accent{color:var(--neon-green)}
 .input-group{position:relative;width:100%}
 .input-link{width:100%;min-height:56px;padding:var(--space-4);background:var(--bg-input);border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-mono);font-size:clamp(0.8125rem,1.8vw,0.9375rem);line-height:1.5;outline:none;transition:border-color var(--transition-fast),box-shadow var(--transition-fast);resize:vertical}
 .input-link::placeholder{color:var(--text-muted);font-family:var(--font-mono);font-size:clamp(0.75rem,1.5vw,0.875rem);opacity:.7}
-.input-link:focus{border-color:var(--neon-green);box-shadow:0 0 0 2px var(--neon-cyan-soft),0 0 12px var(--neon-cyan-glow)}
-.input-link.error{border-color:var(--error-red);box-shadow:0 0 0 2px var(--error-red-soft),0 0 12px rgba(255,51,85,0.3)}
-.input-link.filled{border-color:rgba(0,255,65,0.3)}
+.input-link:focus{border-color:var(--neon-green);box-shadow:0 0 0 2px rgba(204,255,0,0.1),0 0 12px rgba(204,255,0,0.25)}
+.input-link.error{border-color:var(--error-red);box-shadow:0 0 0 2px var(--error-red-soft),0 0 12px var(--error-red-soft)}
+.input-link.filled{border-color:rgba(204,255,0,0.25)}
 .input-error{display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-2);color:var(--error-red);font-size:clamp(0.75rem,1.5vw,0.875rem);line-height:1.5;animation:fadeSlideIn 250ms ease-out}
 
 /* ===== CARDS (GLASS) ===== */
@@ -131,11 +134,11 @@ h1 .accent{color:var(--neon-green)}
 }
 
 .result-panel {
-  border: 1px solid rgba(0, 255, 65, 0.15);
+  border: 1px solid rgba(0, 209, 255, 0.12);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 0 8px rgba(0, 255, 65, 0.15);
+    0 8px 32px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 16px rgba(0, 209, 255, 0.15);
   padding: var(--card-padding);
 }
 
@@ -166,21 +169,20 @@ h1 .accent{color:var(--neon-green)}
   padding:var(--btn-padding);
   min-height:48px;
   width:100%;
-  filter:var(--liquid-filter);
   background:var(--liquid-color);
   color:#000;
   font-family:var(--font-heading);
   font-size:clamp(0.875rem,2vw,1rem);
-  font-weight:600;
+  font-weight:700;
   letter-spacing:.02em;
   text-transform:uppercase;
   border:none;
-  border-radius:var(--radius-md);
+  border-radius:var(--radius-full);
   cursor:pointer;
   box-shadow:var(--liquid-shadow);
   position:relative;
   overflow:hidden;
-  transition:transform 250ms cubic-bezier(0.34,1.56,0.64,1),box-shadow 250ms ease-out,filter 300ms ease-out
+  transition:transform 250ms cubic-bezier(0.34,1.56,0.64,1),box-shadow 250ms ease-out
 }
 .btn-convert::before{
   content:'';
@@ -195,25 +197,22 @@ h1 .accent{color:var(--neon-green)}
 }
 .btn-convert:hover{
   transform:translateY(-2px);
-  box-shadow:var(--liquid-hover-shadow);
-  filter:var(--liquid-filter) brightness(1.08)
+  box-shadow:var(--liquid-hover-shadow)
 }
 .btn-convert:active{
   transform:scale(0.97) translateY(0);
-  box-shadow:inset 0 2px 4px rgba(0,0,0,0.3),0 2px 0 rgba(0,255,65,0.05);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.3);
   transition-duration:80ms
 }
 .btn-convert:disabled{
-  filter:none;
   opacity:.35;
   cursor:not-allowed;
   transform:none;
   box-shadow:none
 }
 .btn-convert:focus-visible{
-  outline:2px solid #fff;
-  outline-offset:3px;
-  filter:var(--liquid-filter) drop-shadow(0 0 6px rgba(0,255,65,0.5))
+  outline:2px solid var(--neon-green);
+  outline-offset:3px
 }
 
 /* ===== SECONDARY BUTTON (Copy) ===== */
@@ -224,9 +223,9 @@ h1 .accent{color:var(--neon-green)}
   gap:var(--space-2);
   padding:var(--space-3) var(--space-5);
   min-height:40px;
-  background:rgba(0,255,65,0.06);
-  color:var(--neon-green);
-  border:1px solid rgba(0,255,65,0.25);
+  background:rgba(0,209,255,0.06);
+  color:var(--neon-cyan);
+  border:1px solid rgba(0,209,255,0.25);
   border-radius:var(--radius-sm);
   cursor:pointer;
   transition:all 250ms cubic-bezier(0.34,1.56,0.64,1);
@@ -238,14 +237,14 @@ h1 .accent{color:var(--neon-green)}
   font-weight:500
 }
 .btn-copy:hover{
-  background:rgba(0,255,65,0.12);
-  border-color:var(--neon-green);
+  background:rgba(0,209,255,0.12);
+  border-color:var(--neon-cyan);
   box-shadow:0 0 12px rgba(0,209,255,0.2);
   transform:translateY(-1px)
 }
-.btn-copy:active{transform:scale(0.96);background:rgba(0,255,65,0.2)}
-.btn-copy.copied{background:var(--neon-green);color:#000;border-color:var(--neon-green);animation:pulseCopy .5s ease-out}
-.btn-copy:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.btn-copy:active{transform:scale(0.96);background:rgba(0,209,255,0.2)}
+.btn-copy.copied{background:var(--neon-cyan);color:#000;border-color:var(--neon-cyan);animation:pulseCopy .5s ease-out}
+.btn-copy:focus-visible{outline:2px solid var(--neon-cyan);outline-offset:3px}
 
 /* ===== METAL BUTTONS (Primary / Metal / Gold) ===== */
 .metal-btn{
@@ -343,7 +342,7 @@ h1 .accent{color:var(--neon-green)}
 .preview-grid{display:grid;grid-template-columns:110px 1fr;gap:var(--space-2) var(--space-4);font-size:clamp(0.75rem,1.5vw,0.875rem)}
 .preview-label{color:var(--text-muted);font-family:var(--font-heading);font-weight:500;text-transform:uppercase;letter-spacing:.08em}
 .preview-value{color:var(--text-primary);font-family:var(--font-mono);word-break:break-all}
-.preview-value.highlight{color:var(--neon-green)}
+.preview-value.highlight{color:var(--neon-cyan)}
 .preview-divider{grid-column:1/-1;border:none;border-top:1px solid var(--glass-border-color);margin:var(--space-1) 0}
 
 /* ===== SETTINGS ===== */
@@ -363,19 +362,213 @@ h1 .accent{color:var(--neon-green)}
 .toggle-track{position:absolute;inset:0;background:var(--border-default);border-radius:var(--radius-full);transition:background var(--transition-fast)}
 .toggle-track::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:var(--text-muted);border-radius:50%;transition:all var(--transition-spring)}
 .toggle input:checked+.toggle-track{background:var(--neon-cyan-soft)}
-.toggle input:checked+.toggle-track::after{transform:translateX(20px);background:var(--neon-green);box-shadow:0 0 6px var(--neon-cyan-glow)}
+.toggle input:checked+.toggle-track::after{transform:translateX(20px);background:var(--neon-cyan);box-shadow:0 0 8px rgba(0,209,255,0.6)}
 .toggle input:focus-visible+.toggle-track{box-shadow:0 0 0 3px var(--neon-cyan-soft)}
 
 /* Text input */
 .input-text{width:100%;padding:var(--input-padding);background:var(--bg-input);border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font-mono);font-size:clamp(0.75rem,1.5vw,0.875rem);outline:none;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
-.input-text:focus{border-color:var(--neon-green);box-shadow:0 0 0 2px var(--neon-cyan-soft),0 0 12px var(--neon-cyan-glow)}
+.input-text:focus{border-color:var(--neon-green);box-shadow:0 0 0 2px rgba(204,255,0,0.1),0 0 12px rgba(204,255,0,0.25)}
 .input-text::placeholder{color:var(--text-muted);opacity:.6}
 .textarea-extra{min-height:64px;resize:vertical;font-size:clamp(0.75rem,1.5vw,0.875rem)}
 
+/* ===== ADVANCED SETTINGS ===== */
+.advanced-trigger{
+  display:inline-flex;
+  align-items:center;
+  gap:var(--space-2);
+  cursor:pointer;
+  margin-top:var(--space-2);
+  color:var(--text-muted);
+  font-family:var(--font-heading);
+  font-size:0.75rem;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  user-select:none;
+  transition:color var(--transition-fast)
+}
+.advanced-trigger:hover{color:var(--neon-green)}
+.advanced-arrow{transition:transform var(--transition-fast)}
+.advanced-content{
+  display:flex;
+  flex-direction:column;
+  gap:var(--space-4);
+  margin-top:var(--space-2);
+  border-top:1px dashed rgba(255,255,255,0.06);
+  padding-top:var(--space-4);
+  animation:fadeSlideIn 250ms ease-out
+}
+
+/* ===== HELP SECTION ===== */
+.help-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(0, 209, 255, 0.03);
+  border: 1px dashed rgba(0, 209, 255, 0.25);
+  border-radius: var(--radius-sm);
+  color: var(--neon-cyan);
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  user-select: none;
+  transition: all var(--transition-fast);
+}
+.help-trigger:hover {
+  background: rgba(0, 209, 255, 0.08);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 12px rgba(0, 209, 255, 0.15);
+}
+.help-arrow {
+  display: inline-block;
+  transition: transform var(--transition-fast);
+}
+.help-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  animation: fadeSlideIn 250ms ease-out;
+}
+.help-item {
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--glass-border-color);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+}
+.help-title {
+  color: var(--neon-green);
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: var(--space-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding-bottom: var(--space-2);
+}
+.help-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+@media (max-width: 640px) {
+  .help-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+}
+.help-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.help-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-family: var(--font-heading);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+.help-badge--success {
+  background: rgba(0, 255, 65, 0.1);
+  color: var(--neon-green);
+  border: 1px solid rgba(0, 255, 65, 0.3);
+}
+.help-badge--danger {
+  background: rgba(255, 62, 108, 0.1);
+  color: #FF3E6C;
+  border: 1px solid rgba(255, 62, 108, 0.3);
+}
+.help-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.help-column li {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  position: relative;
+  padding-left: var(--space-3);
+}
+.help-column li::before {
+  content: "•";
+  color: var(--text-muted);
+  position: absolute;
+  left: 0;
+}
+
+/* ===== TOOLTIPS ===== */
+.tooltip-trigger{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.08);
+  color:var(--text-muted);
+  font-size:9px;
+  font-family:var(--font-body);
+  font-weight:bold;
+  cursor:help;
+  position:relative;
+  vertical-align:middle;
+  margin-left:var(--space-1);
+  transition:all var(--transition-fast)
+}
+.tooltip-trigger:hover{
+  background:rgba(0,209,255,0.15);
+  color:var(--neon-cyan);
+  box-shadow:0 0 6px rgba(0,209,255,0.5)
+}
+.tooltip-trigger::after{
+  content:attr(data-tooltip);
+  position:absolute;
+  bottom:135%;
+  left:50%;
+  transform:translateX(-50%) translateY(6px);
+  width:260px;
+  padding:var(--space-2) var(--space-3);
+  background:rgba(10,10,15,0.95);
+  backdrop-filter:blur(8px);
+  border:1px solid var(--neon-cyan);
+  border-radius:var(--radius-sm);
+  color:var(--text-primary);
+  font-family:var(--font-body);
+  font-size:0.75rem;
+  font-weight:normal;
+  text-transform:none;
+  letter-spacing:normal;
+  line-height:1.4;
+  box-shadow:0 4px 16px rgba(0,209,255,0.25);
+  opacity:0;
+  pointer-events:none;
+  transition:all 200ms cubic-bezier(0.19,1,0.22,1);
+  z-index:100;
+  text-align:left;
+  white-space:normal
+}
+.tooltip-trigger:hover::after{
+  opacity:1;
+  transform:translateX(-50%) translateY(0)
+}
+
 /* ===== RESULT PANEL ===== */
-.result-link{display:block;padding:var(--space-3);margin-bottom:var(--space-4);background:rgba(10,10,15,0.8);border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--neon-green);font-family:var(--font-mono);font-size:clamp(0.8125rem,1.8vw,0.9375rem);line-height:1.5;word-break:break-all;user-select:all}
+.result-link{display:block;padding:var(--space-3);margin-bottom:var(--space-4);background:rgba(10,10,15,0.8);border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--neon-cyan);font-family:var(--font-mono);font-size:clamp(0.8125rem,1.8vw,0.9375rem);line-height:1.5;word-break:break-all;user-select:all}
 .result-actions{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
-.copy-feedback{color:var(--success-green);font-size:clamp(0.75rem,1.5vw,0.875rem);font-weight:500;animation:fadeIn 200ms ease-out}
+.copy-feedback{color:var(--neon-cyan);font-size:clamp(0.75rem,1.5vw,0.875rem);font-weight:500;animation:fadeIn 200ms ease-out}
 
 /* ===== HISTORY ===== */
 .history-list{display:flex;flex-direction:column;gap:var(--space-3)}
@@ -388,9 +581,9 @@ h1 .accent{color:var(--neon-green)}
   transition:all var(--transition-fast)
 }
 .history-item:hover{
-  background:rgba(30,30,46,0.75);
-  backdrop-filter:blur(16px) saturate(1.6);
-  border-color:rgba(0,255,65,0.2)
+  background:rgba(30,30,46,0.4);
+  backdrop-filter:blur(24px) saturate(1.6);
+  border-color:rgba(204,255,0,0.2)
 }
 .history-item:active{transform:scale(0.99)}
 .history-time{color:var(--text-muted);font-size:.75rem;white-space:nowrap;flex-shrink:0}
@@ -401,8 +594,8 @@ h1 .accent{color:var(--neon-green)}
 .history-empty{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);padding:var(--space-8) 0;color:var(--text-muted);font-size:clamp(0.75rem,1.5vw,0.875rem);text-align:center}
 
 /* ===== NOTIFICATION ===== */
-.notification{position:fixed;top:var(--space-5);left:50%;transform:translateX(-50%);padding:var(--space-3) var(--space-5);background:rgba(15,15,25,0.75);backdrop-filter:blur(12px);border:1px solid var(--neon-green);border-radius:var(--radius-md);color:var(--neon-green);font-family:var(--font-mono);font-size:clamp(0.75rem,1.5vw,0.875rem);z-index:1000;box-shadow:0 0 12px var(--neon-cyan-glow);animation:fadeSlideIn 250ms ease-out}
-.notification.error{border-color:var(--error-red);color:var(--error-red);box-shadow:0 0 12px rgba(255,51,85,0.3)}
+.notification{position:fixed;top:var(--space-5);left:50%;transform:translateX(-50%);padding:var(--space-3) var(--space-5);background:rgba(15,15,25,0.75);backdrop-filter:blur(12px);border:1px solid var(--neon-green);border-radius:var(--radius-md);color:var(--neon-green);font-family:var(--font-mono);font-size:clamp(0.75rem,1.5vw,0.875rem);z-index:1000;box-shadow:0 0 12px rgba(204,255,0,0.25);animation:fadeSlideIn 250ms ease-out}
+.notification.error{border-color:var(--error-red);color:var(--error-red);box-shadow:0 0 12px rgba(255,42,85,0.3)}
 
 /* ===== ANIMATIONS ===== */
 @keyframes fadeSlideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -437,7 +630,7 @@ h1 .accent{color:var(--neon-green)}
   border-radius:50%;
   pointer-events:none;
   filter:var(--goo-filter) blur(40px);
-  opacity:.25;
+  opacity:.15;
   z-index:-1;
   will-change:transform;
   mix-blend-mode:hard-light;
@@ -446,7 +639,7 @@ h1 .accent{color:var(--neon-green)}
 .bg-circle--1{
   width:var(--bg-circle-size);
   height:var(--bg-circle-size);
-  background:radial-gradient(circle at center,rgba(0,255,65,0.6) 0,rgba(0,255,65,0) 70%);
+  background:radial-gradient(circle at center,rgba(204,255,0,0.3) 0,rgba(204,255,0,0) 70%);
   top:10%;
   left:5%;
   animation:bgCircleFloat1 22s ease-in-out infinite;
@@ -454,7 +647,7 @@ h1 .accent{color:var(--neon-green)}
 .bg-circle--2{
   width:calc(var(--bg-circle-size) * 0.8);
   height:calc(var(--bg-circle-size) * 0.8);
-  background:radial-gradient(circle at center,rgba(0,240,255,0.4) 0,rgba(0,240,255,0) 70%);
+  background:radial-gradient(circle at center,rgba(0,209,255,0.2) 0,rgba(0,209,255,0) 70%);
   top:55%;
   right:5%;
   animation:bgCircleFloat2 26s ease-in-out infinite;
@@ -463,7 +656,7 @@ h1 .accent{color:var(--neon-green)}
 .bg-circle--3{
   width:calc(var(--bg-circle-size) * 1.2);
   height:calc(var(--bg-circle-size) * 1.2);
-  background:radial-gradient(circle at center,rgba(100,220,255,0.3) 0,rgba(100,220,255,0) 70%);
+  background:radial-gradient(circle at center,rgba(255,42,85,0.08) 0,rgba(255,42,85,0) 70%);
   bottom:5%;
   left:20%;
   animation:bgCircleFloat3 30s ease-in-out infinite;
@@ -613,7 +806,7 @@ h1 .accent{color:var(--neon-green)}
         <div class="settings-group">
           <!-- Speed -->
           <div class="setting-row">
-            <span class="setting-label">⚡ Скорость провайдера</span>
+            <span class="setting-label">⚡ Скорость провайдера <span class="tooltip-trigger" data-tooltip="⚡ [СКОРОСТЬ] Лимит скорости в Мбит/с. Ограничивает предельную скорость скачивания/отдачи, но не влияет на пинг (задержку).">ⓘ</span></span>
             <div class="input-speed-wrapper">
               <input type="range" id="speedRange" class="input-range" min="50" max="2000" value="500" step="10">
               <span class="input-speed-value" id="speedValue">500</span>
@@ -621,7 +814,7 @@ h1 .accent{color:var(--neon-green)}
           </div>
           <!-- Fast Open -->
           <div class="setting-row">
-            <span class="setting-label">🚀 Fast Open</span>
+            <span class="setting-label">🚀 Fast Open <span class="tooltip-trigger" data-tooltip="⚡ [СКОРОСТЬ] Ускоряет запуск сессии. Снижает задержку первого пакета (RTT), отправляя данные во время рукопожатия TLS.">ⓘ</span></span>
             <label class="toggle">
               <input type="checkbox" id="fastOpenToggle" checked>
               <div class="toggle-track"></div>
@@ -629,13 +822,163 @@ h1 .accent{color:var(--neon-green)}
           </div>
           <!-- SNI -->
           <div class="setting-row">
-            <span class="setting-label">🎯 SNI</span>
+            <span class="setting-label">🎯 SNI <span class="tooltip-trigger" data-tooltip="🛡️ [АНОНИМНОСТЬ] Доменное имя в начале TLS рукопожатия. Должно выглядеть как легитимный белый сайт для обхода цензуры провайдера.">ⓘ</span></span>
             <input type="text" id="sniInput" class="input-text" placeholder="Авто (из ссылки) или введите вручную" spellcheck="false">
           </div>
           <!-- Extra params -->
           <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:var(--space-2)">
-            <span class="setting-label">📝 Доп. параметры</span>
+            <span class="setting-label">📝 Доп. параметры <span class="tooltip-trigger" data-tooltip="⚙️ [НАСТРОЙКА] Дополнительные query-параметры, которые будут принудительно добавлены к результирующей Hysteria2 ссылке.">ⓘ</span></span>
             <textarea id="extraParams" class="input-text textarea-extra" placeholder="obfs=xplus&amp;obfs-password=secret" spellcheck="false"></textarea>
+          </div>
+
+          <!-- Advanced Trigger -->
+          <div class="advanced-trigger" id="advancedTrigger">
+            <span>⚙️ Дополнительные настройки</span>
+            <span class="advanced-arrow" id="advancedArrow">▼</span>
+          </div>
+
+          <!-- Advanced Content -->
+          <div class="advanced-content hidden" id="advancedContent">
+            <!-- Insecure TLS -->
+            <div class="setting-row">
+              <span class="setting-label">🔒 Allow Insecure <span class="tooltip-trigger" data-tooltip="🛡️ [БЕЗОПАСНОСТЬ] Разрешает незащищенные TLS соединения. Включите, если сервер использует самоподписанный сертификат, но помните об угрозе MITM-атак.">ⓘ</span></span>
+              <label class="toggle">
+                <input type="checkbox" id="insecureToggle" checked>
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+            <!-- Pin SHA-256 -->
+            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:var(--space-2)">
+              <span class="setting-label">📌 Pin SHA-256 <span class="tooltip-trigger" data-tooltip="🛡️ [БЕЗОПАСНОСТЬ] SHA-256 хэш публичного ключа сервера. Позволяет безопасно использовать самоподписанные сертификаты без отключения TLS проверок.">ⓘ</span></span>
+              <input type="text" id="pinsha256Input" class="input-text" placeholder="SHA-256 хэш сертификата сервера" spellcheck="false">
+            </div>
+            <!-- Port Hopping -->
+            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:var(--space-2)">
+              <span class="setting-label">🔀 Port Hopping (hop) <span class="tooltip-trigger" data-tooltip="⚡ [СКОРОСТЬ/СТАБИЛЬНОСТЬ] Диапазон портов для обхода ограничений UDP со стороны провайдера. Пример: 20000-30000 или 1234,5678">ⓘ</span></span>
+              <input type="text" id="hopInput" class="input-text" placeholder="Диапазон портов (например, 20000-30000)" spellcheck="false">
+            </div>
+            <!-- MTU -->
+            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:var(--space-2)">
+              <span class="setting-label">📦 MTU <span class="tooltip-trigger" data-tooltip="⚙️ [СТАБИЛЬНОСТЬ] Максимальный размер пакета. Для домашнего интернета рекомендуется 1500 (стандарт) или 1492 (PPPoE). Для мобильного интернета - 1350 или 1200.">ⓘ</span></span>
+              <input type="number" id="mtuInput" class="input-text" placeholder="По умолчанию (например, 1500)" min="576" max="1500" spellcheck="false">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Hysteria2 Parameters Help Section -->
+        <div class="help-trigger" id="helpTrigger">
+          <span>💡 Подробное руководство по параметрам Hysteria2</span>
+          <span class="help-arrow" id="helpArrow">▼</span>
+        </div>
+        
+        <div class="help-content hidden" id="helpContent">
+          <!-- Fast Open -->
+          <div class="help-item">
+            <div class="help-title">🚀 Fast Open</div>
+            <div class="help-grid">
+              <div class="help-column">
+                <div class="help-badge help-badge--success">ЕСЛИ ВКЛЮЧИТЬ (Рекомендуется)</div>
+                <ul>
+                  <li><strong>Плюсы:</strong> Снижает задержку первого запроса (RTT), отправляя данные во время TLS рукопожатия. Сайты открываются быстрее.</li>
+                  <li><strong>Минусы:</strong> Может блокироваться провайдером, если на пути следования пакетов стоит старое сетевое оборудование (с кривым NAT).</li>
+                  <li><strong>⚙️ Настройка:</strong> На стороне сервера Linux необходимо включить поддержку Fast Open в ядре (выполнить команду <code>sysctl -w net.ipv4.tcp_fastopen=3</code>).</li>
+                </ul>
+              </div>
+              <div class="help-column">
+                <div class="help-badge help-badge--danger">ЕСЛИ ВЫКЛЮЧИТЬ</div>
+                <ul>
+                  <li><strong>Плюсы:</strong> Идеальная совместимость и стабильность на любых сетях.</li>
+                  <li><strong>Минусы:</strong> Каждое новое соединение будет требовать лишний сетевой круг общения (RTT) перед началом загрузки контента, что замедляет веб-серфинг.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Allow Insecure -->
+          <div class="help-item">
+            <div class="help-title">🔒 Allow Insecure</div>
+            <div class="help-grid">
+              <div class="help-column">
+                <div class="help-badge help-badge--danger">ЕСЛИ ВКЛЮЧИТЬ</div>
+                <ul>
+                  <li><strong>Плюсы:</strong> Позволяет использовать бесплатные самоподписанные TLS сертификаты. Не нужно покупать домен и привязывать его к серверу.</li>
+                  <li><strong>Минусы:</strong> Соединение уязвимо к атаке Man-in-the-Middle (MITM). Провайдер может перехватить трафик, подменив сертификат.</li>
+                </ul>
+              </div>
+              <div class="help-column">
+                <div class="help-badge help-badge--success">ЕСЛИ ВЫКЛЮЧИТЬ (Рекомендуется)</div>
+                <ul>
+                  <li><strong>Плюсы:</strong> Полная безопасность данных и надежное шифрование. Защита от перехвата и анализа трафика.</li>
+                  <li><strong>Минусы:</strong> Требует покупки домена с валидным SSL-сертификатом (Let's Encrypt), либо обязательного указания <strong>Pin SHA-256</strong>.</li>
+                  <li><strong>⚙️ Настройка:</strong> На стороне сервера Hysteria2 должен быть настроен действительный SSL-сертификат от Let's Encrypt/ZeroSSL, привязанный к домену, либо сгенерирован самоподписанный сертификат с передачей отпечатка клиенту.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pin SHA-256 -->
+          <div class="help-item">
+            <div class="help-title">📌 Pin SHA-256</div>
+            <div class="help-grid">
+              <div class="help-column">
+                <div class="help-badge help-badge--success">ЕСЛИ ЗАПОЛНИТЬ</div>
+                <ul>
+                  <li><strong>Плюсы:</strong> Позволяет безопасно использовать самоподписанный сертификат без покупки домена. Клиент проверяет отпечаток ключа и доверяет только вашему серверу, защищая от MITM.</li>
+                  <li><strong>Минусы:</strong> При перевыпуске сертификата отпечаток изменится, и конфигурацию придется сгенерировать заново.</li>
+                  <li><strong>⚙️ Настройка:</strong> Требуется извлечь SHA-256 хэш публичного ключа вашего сертификата на сервере (например, с помощью команды: <code>openssl x509 -noout -fingerprint -sha256 -inform pem -in cert.pem</code>) и вставить полученную строку в это поле.</li>
+                </ul>
+              </div>
+              <div class="help-column">
+                <div class="help-badge help-badge--danger">ЕСЛИ ОСТАВИТЬ ПУСТЫМ</div>
+                <ul>
+                  <li><strong>Плюсы:</strong> Упрощает перевыпуск ключей на сервере без необходимости обновлять ссылки на клиентах.</li>
+                  <li><strong>Минусы:</strong> Требует наличия валидного доменного сертификата (Let's Encrypt), иначе придется включить небезопасный <em>Allow Insecure</em>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Port Hopping -->
+          <div class="help-item">
+            <div class="help-title">🔀 Port Hopping (hop)</div>
+            <div class="help-grid">
+              <div class="help-column">
+                <div class="help-badge help-badge--success">ЕСЛИ ЗАПОЛНИТЬ</div>
+                <ul>
+                  <li><strong>Плюсы:</strong> Помогает обходить ограничения провайдеров на лимит UDP соединений и блокировки/замедления по портам. Сервер слушает диапазон портов.</li>
+                  <li><strong>Минусы:</strong> Требует настройки NAT/IPTables правил перенаправления портов на самом сервере Hysteria2.</li>
+                  <li><strong>⚙️ Настройка:</strong> На сервере требуется настроить перенаправление UDP портов из диапазона (например, 20000-30000) на основной порт Hysteria2 (например, 443). Пример команды iptables: <code>iptables -t nat -A PREROUTING -p udp --dport 20000:30000 -j REDIRECT --to-port 443</code>.</li>
+                </ul>
+              </div>
+              <div class="help-column">
+                <div class="help-badge help-badge--danger">ЕСЛИ ОСТАВИТЬ ПУСТЫМ</div>
+                <ul>
+                  <li><strong>Плюсы:</strong> Нет необходимости настраивать дополнительные правила фаервола на стороне сервера.</li>
+                  <li><strong>Минусы:</strong> Высокий риск UDP-rate-limiting от провайдера при просмотре видео или скачивании больших файлов на один порт.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- MTU -->
+          <div class="help-item">
+            <div class="help-title">📦 MTU</div>
+            <div class="help-grid">
+              <div class="help-column">
+                <div class="help-badge help-badge--success">ЕСЛИ НАСТРОИТЬ</div>
+                <ul>
+                  <li><strong>Плюсы:</strong> Предотвращает фрагментацию UDP пакетов. <strong>Для качественного домашнего проводного интернета (оптоволокно/кабель) лучше всего выставлять 1500</strong> (или 1492, если используется PPPoE соединение). <strong>Для мобильного интернета (3G/LTE) оптимально выставить 1350 или 1200</strong> для устранения зависаний.</li>
+                  <li><strong>Минусы:</strong> При слишком низком MTU на быстром домашнем интернете скорость может незначительно снизиться из-за увеличения количества мелких пакетов и накладных расходов.</li>
+                </ul>
+              </div>
+              <div class="help-column">
+                <div class="help-badge help-badge--danger">ЕСЛИ ОСТАВИТЬ ПО УМОЛЧАНИЮ</div>
+                <ul>
+                  <li><strong>Плюсы:</strong> Применяется стандартное значение клиента (максимальная скорость на проводном домашнем интернете).</li>
+                  <li><strong>Минусы:</strong> Мобильные провайдеры с низким MTU будут дропать фрагментированные UDP-пакеты, что вызовет потери и зависания.</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -675,7 +1018,7 @@ h1 .accent{color:var(--neon-green)}
 
     <!-- FOOTER -->
     <footer style="text-align:center;padding:var(--space-8) 0 var(--space-4);color:var(--text-muted);font-size:.75rem;font-family:var(--font-mono)">
-      <span style="color:var(--neon-green);">$</span> vless-converter v2.0 &nbsp;·&nbsp; 🐀 made by shnyr
+      <span style="color:var(--neon-green);">$</span> vless-converter v2.0
     </footer>
   </div>
 </div>
@@ -706,6 +1049,18 @@ const speedValue = $('speedValue');
 const fastOpenToggle = $('fastOpenToggle');
 const sniInput = $('sniInput');
 const extraParams = $('extraParams');
+
+// Advanced Settings refs
+const insecureToggle = $('insecureToggle');
+const pinsha256Input = $('pinsha256Input');
+const hopInput = $('hopInput');
+const mtuInput = $('mtuInput');
+const advancedTrigger = $('advancedTrigger');
+const advancedArrow = $('advancedArrow');
+const advancedContent = $('advancedContent');
+const helpTrigger = $('helpTrigger');
+const helpArrow = $('helpArrow');
+const helpContent = $('helpContent');
 
 const previewFields = {
   uuid: $('pvUuid'),
@@ -783,7 +1138,7 @@ function parseVlessXHttp(link) {
     port,
     type: scheme === 'xhttp' ? 'xhttp' : (rawQuery.type || 'vless'),
     encryption: sp.get('encryption') || '',
-    sni: sp.get('sni') || sp.get('security') || '',
+    sni: sp.get('sni') || '',
     fp: sp.get('fp') || '',
     pbk: sp.get('pbk') || '',
     sid: sp.get('sid') || '',
@@ -800,7 +1155,7 @@ function parseVlessXHttp(link) {
 function generateHysteria2Uri(parsed, settings) {
   const params = new URLSearchParams();
 
-  params.set('insecure', '1');
+  params.set('insecure', settings.insecure ? '1' : '0');
   params.set('alpn', 'h3');
 
   const sni = (settings.sni || '').trim() || parsed.sni || parsed.host;
@@ -811,7 +1166,21 @@ function generateHysteria2Uri(parsed, settings) {
   params.set('up', String(speed));
 
   params.set('fastopen', settings.fastOpen ? '1' : '0');
-  params.set('obfs', 'none');
+
+  // Pin SHA-256
+  if (settings.pinsha256 && settings.pinsha256.trim()) {
+    params.set('pinsha256', settings.pinsha256.trim());
+  }
+
+  // Port Hopping
+  if (settings.hop && settings.hop.trim()) {
+    params.set('hop', settings.hop.trim());
+  }
+
+  // MTU
+  if (settings.mtu && settings.mtu.trim()) {
+    params.set('mtu', settings.mtu.trim());
+  }
 
   // Custom extra params
   if (settings.extraParams && settings.extraParams.trim()) {
@@ -828,6 +1197,7 @@ function generateHysteria2Uri(parsed, settings) {
 
 /* ============ UI STATE ============ */
 let lastParsed = null;
+let isSniManual = false;
 
 /* ============ UI RENDER ============ */
 function showError(msg) {
@@ -960,6 +1330,20 @@ function renderHistory() {
           const inp = entry.inputLink || entry.input || '';
           if (inp) {
             inputLink.value = inp;
+            if (entry.settings) {
+              speedRange.value = entry.settings.speed || 500;
+              speedValue.textContent = speedRange.value;
+              fastOpenToggle.checked = entry.settings.fastOpen !== false;
+              sniInput.value = entry.settings.sni || '';
+              extraParams.value = entry.settings.extraParams || '';
+              isSniManual = (entry.settings.sni && entry.settings.sni.trim() !== '');
+              
+              // Advanced settings
+              insecureToggle.checked = entry.settings.insecure !== false;
+              pinsha256Input.value = entry.settings.pinsha256 || '';
+              hopInput.value = entry.settings.hop || '';
+              mtuInput.value = entry.settings.mtu || '';
+            }
             triggerParse();
           }
           showResult(output);
@@ -984,7 +1368,11 @@ function doConvert() {
     speed: parseInt(speedRange.value, 10) || 500,
     fastOpen: fastOpenToggle.checked,
     sni: sniInput.value,
-    extraParams: extraParams.value
+    extraParams: extraParams.value,
+    insecure: insecureToggle.checked,
+    pinsha256: pinsha256Input.value,
+    hop: hopInput.value,
+    mtu: mtuInput.value
   };
 
   const href = generateHysteria2Uri(lastParsed, settings);
@@ -1000,7 +1388,11 @@ function doConvert() {
       speed: settings.speed,
       fastOpen: settings.fastOpen,
       sni: settings.sni,
-      extraParams: settings.extraParams
+      extraParams: settings.extraParams,
+      insecure: settings.insecure,
+      pinsha256: settings.pinsha256,
+      hop: settings.hop,
+      mtu: settings.mtu
     },
     createdAt: Date.now()
   };
@@ -1026,6 +1418,9 @@ function triggerParse() {
 
   if (!raw) {
     inputLink.classList.remove('filled');
+    if (!isSniManual) {
+      sniInput.value = '';
+    }
     return;
   }
 
@@ -1039,13 +1434,8 @@ function triggerParse() {
 
   lastParsed = result.parsed;
   // Auto-fill SNI if available and user hasn't manually set one
-  const currentSni = sniInput.value.trim();
-  if (result.parsed.sni && !currentSni) {
-    sniInput.value = result.parsed.sni;
-  } else if (result.parsed.host && !currentSni && !result.parsed.sni) {
-    // try last saved SNI
-    const lastSni = storageGet(SNI_KEY, '');
-    if (lastSni) sniInput.value = lastSni;
+  if (!isSniManual) {
+    sniInput.value = result.parsed.sni || '';
   }
 
   populatePreview(result.parsed);
@@ -1100,6 +1490,10 @@ function loadSettings() {
     speedRange.value = Math.max(50, Math.min(2000, s.speed || 500));
     speedValue.textContent = speedRange.value;
     fastOpenToggle.checked = s.fastOpen !== undefined ? s.fastOpen : true;
+    insecureToggle.checked = s.insecure !== undefined ? s.insecure : true;
+    pinsha256Input.value = s.pinsha256 || '';
+    hopInput.value = s.hop || '';
+    mtuInput.value = s.mtu || '';
   }
   // Load last SNI
   const lastSni = storageGet(SNI_KEY, '');
@@ -1109,7 +1503,11 @@ function loadSettings() {
 function saveSettings() {
   storageSet(SETTINGS_KEY, {
     speed: parseInt(speedRange.value, 10) || 500,
-    fastOpen: fastOpenToggle.checked
+    fastOpen: fastOpenToggle.checked,
+    insecure: insecureToggle.checked,
+    pinsha256: pinsha256Input.value,
+    hop: hopInput.value,
+    mtu: mtuInput.value
   });
 }
 
@@ -1117,6 +1515,7 @@ function saveSettings() {
 // Parse on input with debounce
 let parseDebounce = null;
 inputLink.addEventListener('input', function() {
+  isSniManual = false; // Reset manual SNI flag so that new link's SNI is parsed
   clearTimeout(parseDebounce);
   parseDebounce = setTimeout(triggerParse, 300);
 });
@@ -1146,8 +1545,39 @@ function debouncedSaveSettings() {
   clearTimeout(settingsDebounce);
   settingsDebounce = setTimeout(saveSettings, 500);
 }
-sniInput.addEventListener('input', debouncedSaveSettings);
+sniInput.addEventListener('input', function() {
+  if (sniInput.value.trim() === '') {
+    isSniManual = false;
+  } else {
+    isSniManual = true;
+  }
+  debouncedSaveSettings();
+});
 extraParams.addEventListener('input', debouncedSaveSettings);
+
+// Advanced settings listeners
+advancedTrigger.addEventListener('click', function() {
+  const isHidden = advancedContent.classList.toggle('hidden');
+  if (isHidden) {
+    advancedArrow.style.transform = 'rotate(0deg)';
+  } else {
+    advancedArrow.style.transform = 'rotate(90deg)';
+  }
+});
+
+helpTrigger.addEventListener('click', function() {
+  const isHidden = helpContent.classList.toggle('hidden');
+  if (isHidden) {
+    helpArrow.style.transform = 'rotate(0deg)';
+  } else {
+    helpArrow.style.transform = 'rotate(90deg)';
+  }
+});
+
+insecureToggle.addEventListener('change', saveSettings);
+pinsha256Input.addEventListener('input', debouncedSaveSettings);
+hopInput.addEventListener('input', debouncedSaveSettings);
+mtuInput.addEventListener('input', debouncedSaveSettings);
 
 // Clear history
 btnClearHistory.addEventListener('click', function() {
@@ -1176,7 +1606,6 @@ renderHistory();
 // Auto-detect paste via input listener (already set above)
 
 console.log('⚡ VLESS → Hysteria2 Converter v2.0 loaded');
-console.log('🐀 made by shnyr');
 })();
 </script>
 </body>
