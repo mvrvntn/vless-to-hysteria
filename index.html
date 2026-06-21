@@ -358,7 +358,7 @@
         </div>
 
         <!-- 1. VLESS REALITY SECTION -->
-        <section class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
+        <section id="sectionReality" class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
           <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
             <h3 class="font-heading text-xs md:text-sm font-semibold tracking-wider text-white flex items-center gap-2">
               <span class="text-lime font-bold">▍</span>1. VLESS REALITY (TCP + Vision)
@@ -384,7 +384,7 @@
         </section>
 
         <!-- 2. VLESS XHTTP SECTION -->
-        <section class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
+        <section id="sectionXhttp" class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
           <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
             <h3 class="font-heading text-xs md:text-sm font-semibold tracking-wider text-white flex items-center gap-2">
               <span class="text-lime font-bold">▍</span>2. VLESS XHTTP (xhttp транспорт)
@@ -410,7 +410,7 @@
         </section>
 
         <!-- 3. HYSTERIA2 SECTION -->
-        <section class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
+        <section id="sectionHysteria" class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
           <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
             <h3 class="font-heading text-xs md:text-sm font-semibold tracking-wider text-white flex items-center gap-2">
               <span class="text-lime font-bold">▍</span>3. Hysteria2 (QUIC)
@@ -564,6 +564,9 @@
       const realityCount = $('realityCount');
       const xhttpCount = $('xhttpCount');
       const hysteriaCount = $('hysteriaCount');
+      const sectionReality = $('sectionReality');
+      const sectionXhttp = $('sectionXhttp');
+      const sectionHysteria = $('sectionHysteria');
       
       const singboxJsonCode = $('singboxJsonCode');
       const uciScriptCode = $('uciScriptCode');
@@ -611,6 +614,16 @@
         if (!host) return false;
         const h = host.toLowerCase();
         return h.endsWith('.cloudflare.com') || h.endsWith('.workers.dev') || h === 'workers.dev';
+      }
+
+      function getInputSubtype(parsed) {
+        if (!parsed) return 'reality';
+        if (parsed.protocol === 'hysteria2') return 'hysteria2';
+        const q = parsed.rawQuery || {};
+        if (q.type === 'xhttp' || q.transport === 'xhttp') {
+          return 'xhttp';
+        }
+        return 'reality';
       }
 
       // --- CLEAN HASH NAME (LuCI COMPATIBLE) ---
@@ -916,9 +929,17 @@
 
       window.copyAllFromProtocol = function(proto) {
         if (conversionResults.length === 0) return;
-        const allUrls = conversionResults.map(res => res.generated[proto]).join('\n');
+        const filtered = conversionResults.filter(res => {
+          const subtype = getInputSubtype(res.parsed);
+          if (proto === 'reality' && subtype !== 'reality') return false;
+          if (proto === 'xhttp' && subtype !== 'xhttp') return false;
+          return true;
+        });
+        
+        if (filtered.length === 0) return;
+        const allUrls = filtered.map(res => res.generated[proto]).join('\n');
         navigator.clipboard.writeText(allUrls).then(() => {
-          showToast(`Скопировано ссылок (${proto.toUpperCase()}): ${conversionResults.length}`);
+          showToast(`Скопировано ссылок (${proto.toUpperCase()}): ${filtered.length}`);
         }).catch(() => {
           showToast('Не удалось скопировать', 'error');
         });
@@ -1014,15 +1035,19 @@
         // Show Parsed Preview Table
         renderPreviewTable();
 
-        // Update Counts
-        realityCount.textContent = results.length;
-        xhttpCount.textContent = results.length;
-        hysteriaCount.textContent = results.length;
-
         // Render target tables
-        renderTargetTable('reality', tableBodyReality);
-        renderTargetTable('xhttp', tableBodyXhttp);
-        renderTargetTable('hysteria', tableBodyHysteria);
+        const countReality = renderTargetTable('reality', tableBodyReality);
+        const countXhttp = renderTargetTable('xhttp', tableBodyXhttp);
+        const countHysteria = renderTargetTable('hysteria', tableBodyHysteria);
+
+        realityCount.textContent = countReality;
+        xhttpCount.textContent = countXhttp;
+        hysteriaCount.textContent = countHysteria;
+
+        // Show/hide sections based on counts
+        sectionReality.classList.toggle('hidden', countReality === 0);
+        sectionXhttp.classList.toggle('hidden', countXhttp === 0);
+        sectionHysteria.classList.toggle('hidden', countHysteria === 0);
 
         // Generate JSON configs & UCI scripts
         singboxJsonCode.textContent = generateSingboxOutboundsJson(results, config);
@@ -1062,63 +1087,69 @@
           const host = p.host;
           const port = p.port;
           const sni = config.sni || p.sni || host;
+          const subtype = getInputSubtype(p);
 
-          // VLESS REALITY Outbound
-          const pbk = config.pbk || p.pbk || 'PLACEHOLDER_PBK';
-          const sid = config.sid || p.sid || 'PLACEHOLDER_SID';
-          outbounds.push({
-            "type": "vless",
-            "tag": `${name}-reality`,
-            "server": host,
-            "server_port": port,
-            "uuid": cred,
-            "flow": "xtls-rprx-vision",
-            "tls": {
-              "enabled": true,
-              "server_name": sni,
-              "utls": {
+          // 1. Original Protocol (Cleaned)
+          if (subtype === 'reality') {
+            const pbk = config.pbk || p.pbk || 'PLACEHOLDER_PBK';
+            const sid = config.sid || p.sid || 'PLACEHOLDER_SID';
+            outbounds.push({
+              "type": "vless",
+              "tag": `${name}-reality`,
+              "server": host,
+              "server_port": port,
+              "uuid": cred,
+              "flow": "xtls-rprx-vision",
+              "tls": {
                 "enabled": true,
-                "fingerprint": "chrome"
-              },
-              "reality": {
-                "enabled": true,
-                "public_key": pbk,
-                "short_id": sid
+                "server_name": sni,
+                "utls": {
+                  "enabled": true,
+                  "fingerprint": "chrome"
+                },
+                "reality": {
+                  "enabled": true,
+                  "public_key": pbk,
+                  "short_id": sid
+                }
               }
-            }
-          });
-
-          // VLESS XHTTP Outbound
-          const xhttpPath = config.xhttpPath || '/xhttppath/';
-          let extraObj = {};
-          try {
-            if (config.xhttpExtra) extraObj = JSON.parse(config.xhttpExtra);
-          } catch(e) {}
-          
-          outbounds.push({
-            "type": "vless",
-            "tag": `${name}-xhttp`,
-            "server": host,
-            "server_port": port,
-            "uuid": cred,
-            "transport": {
-              "type": "xhttp",
-              "path": xhttpPath,
-              "host": [ host ],
-              ...extraObj
-            },
-            "tls": {
-              "enabled": true,
-              "server_name": host,
-              "utls": {
-                "enabled": true,
-                "fingerprint": "random"
+            });
+          } else if (subtype === 'xhttp') {
+            const xhttpPath = config.xhttpPath || p.rawQuery.path || '/xhttppath/';
+            let extraObj = {};
+            try {
+              if (config.xhttpExtra) {
+                extraObj = JSON.parse(config.xhttpExtra);
+              } else if (p.rawQuery.extra) {
+                extraObj = JSON.parse(decodeURIComponent(p.rawQuery.extra));
+              }
+            } catch(e) {}
+            
+            outbounds.push({
+              "type": "vless",
+              "tag": `${name}-xhttp`,
+              "server": host,
+              "server_port": port,
+              "uuid": cred,
+              "transport": {
+                "type": "xhttp",
+                "path": xhttpPath,
+                "host": [ host ],
+                ...extraObj
               },
-              "alpn": [ "h2", "http/1.1" ]
-            }
-          });
+              "tls": {
+                "enabled": true,
+                "server_name": host,
+                "utls": {
+                  "enabled": true,
+                  "fingerprint": "random"
+                },
+                "alpn": [ "h2", "http/1.1" ]
+              }
+            });
+          }
 
-          // Hysteria2 Outbound
+          // 2. Converted Hysteria2 Outbound
           const hysteriaOutbound = {
             "type": "hysteria2",
             "tag": `${name}-hysteria`,
@@ -1151,8 +1182,9 @@
           const host = p.host;
           const port = p.port;
           const sni = config.sni || p.sni || host;
+          const subtype = getInputSubtype(p);
 
-          // Hysteria2
+          // 1. Converted Hysteria2
           script += `# Добавление Hysteria2: ${name}\n`;
           script += `uci add zeroblock proxy\n`;
           script += `uci set zeroblock.@proxy[-1].name='${name}-hysteria'\n`;
@@ -1167,22 +1199,37 @@
           if (config.mtu) script += `uci set zeroblock.@proxy[-1].mtu='${config.mtu}'\n`;
           script += `\n`;
 
-          // VLESS Reality
-          const pbk = config.pbk || p.pbk || 'PLACEHOLDER_PBK';
-          const sid = config.sid || p.sid || 'PLACEHOLDER_SID';
-          script += `# Добавление VLESS Reality: ${name}\n`;
-          script += `uci add zeroblock proxy\n`;
-          script += `uci set zeroblock.@proxy[-1].name='${name}-reality'\n`;
-          script += `uci set zeroblock.@proxy[-1].proto='vless'\n`;
-          script += `uci set zeroblock.@proxy[-1].server='${host}'\n`;
-          script += `uci set zeroblock.@proxy[-1].port='${port}'\n`;
-          script += `uci set zeroblock.@proxy[-1].uuid='${cred}'\n`;
-          script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
-          script += `uci set zeroblock.@proxy[-1].flow='xtls-rprx-vision'\n`;
-          script += `uci set zeroblock.@proxy[-1].security='reality'\n`;
-          script += `uci set zeroblock.@proxy[-1].pbk='${pbk}'\n`;
-          script += `uci set zeroblock.@proxy[-1].sid='${sid}'\n`;
-          script += `\n`;
+          // 2. Original VLESS/XHTTP Protocol (Cleaned)
+          if (subtype === 'reality') {
+            const pbk = config.pbk || p.pbk || 'PLACEHOLDER_PBK';
+            const sid = config.sid || p.sid || 'PLACEHOLDER_SID';
+            script += `# Добавление VLESS Reality: ${name}\n`;
+            script += `uci add zeroblock proxy\n`;
+            script += `uci set zeroblock.@proxy[-1].name='${name}-reality'\n`;
+            script += `uci set zeroblock.@proxy[-1].proto='vless'\n`;
+            script += `uci set zeroblock.@proxy[-1].server='${host}'\n`;
+            script += `uci set zeroblock.@proxy[-1].port='${port}'\n`;
+            script += `uci set zeroblock.@proxy[-1].uuid='${cred}'\n`;
+            script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
+            script += `uci set zeroblock.@proxy[-1].flow='xtls-rprx-vision'\n`;
+            script += `uci set zeroblock.@proxy[-1].security='reality'\n`;
+            script += `uci set zeroblock.@proxy[-1].pbk='${pbk}'\n`;
+            script += `uci set zeroblock.@proxy[-1].sid='${sid}'\n`;
+            script += `\n`;
+          } else if (subtype === 'xhttp') {
+            const xhttpPath = config.xhttpPath || p.rawQuery.path || '/xhttppath/';
+            script += `# Добавление VLESS XHTTP: ${name}\n`;
+            script += `uci add zeroblock proxy\n`;
+            script += `uci set zeroblock.@proxy[-1].name='${name}-xhttp'\n`;
+            script += `uci set zeroblock.@proxy[-1].proto='vless'\n`;
+            script += `uci set zeroblock.@proxy[-1].server='${host}'\n`;
+            script += `uci set zeroblock.@proxy[-1].port='${port}'\n`;
+            script += `uci set zeroblock.@proxy[-1].uuid='${cred}'\n`;
+            script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
+            script += `uci set zeroblock.@proxy[-1].transport='xhttp'\n`;
+            script += `uci set zeroblock.@proxy[-1].path='${xhttpPath}'\n`;
+            script += `\n`;
+          }
         });
         
         script += `uci commit zeroblock\n`;
@@ -1214,7 +1261,13 @@
 
       function renderTargetTable(proto, tbody) {
         tbody.innerHTML = '';
-        conversionResults.forEach((res, index) => {
+        let count = 0;
+        conversionResults.forEach((res) => {
+          const subtype = getInputSubtype(res.parsed);
+          if (proto === 'reality' && subtype !== 'reality') return;
+          if (proto === 'xhttp' && subtype !== 'xhttp') return;
+
+          count++;
           const generatedUrl = res.generated[proto];
           const isCf = (proto === 'hysteria' && isCloudflareHost(res.parsed.host));
           const tr = document.createElement('tr');
@@ -1234,7 +1287,7 @@
             : '';
 
           tr.innerHTML = `
-            <td class="py-3 px-4 text-zinc-600 font-mono select-none">${index + 1}</td>
+            <td class="py-3 px-4 text-zinc-600 font-mono select-none">${count}</td>
             <td class="py-3 px-4 font-mono font-medium text-zinc-350">
               <span class="bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800 text-[11px] text-zinc-400 select-all">${escapeHtml(res.parsed.cleanedName)}</span>
               ${cfAlert}
@@ -1257,6 +1310,7 @@
           `;
           tbody.appendChild(tr);
         });
+        return count;
       }
 
       // --- HISTORY FLOW ---
