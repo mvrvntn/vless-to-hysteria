@@ -357,6 +357,21 @@
           </p>
         </div>
 
+        <!-- Base64 Subscription Copy Banner -->
+        <div class="bg-gradient-to-r from-zinc-950/80 to-indigo-950/20 border border-indigo-950/60 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl select-none">📦</span>
+            <div class="space-y-0.5">
+              <h4 class="text-xs font-heading font-semibold tracking-wide text-indigo-300 uppercase">Подписка Base64</h4>
+              <p class="text-[11px] text-zinc-400 font-sans">Экспортируйте все сгенерированные прокси-ссылки в виде единой строки для импорта в VPN-клиенты</p>
+            </div>
+          </div>
+          <button type="button" id="btnCopySubscription" onclick="copyBase64Subscription()"
+            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 focus:outline-none shadow-lg shadow-indigo-950/50 hover:shadow-indigo-500/10">
+            <span>📋</span> Скопировать все как подписку (Base64)
+          </button>
+        </div>
+
         <!-- 1. VLESS REALITY SECTION -->
         <section id="sectionReality" class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
           <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
@@ -1031,6 +1046,65 @@
           showToast('UCI Скрипт импорта скопирован!');
         }).catch(() => {
           showToast('Не удалось скопировать', 'error');
+        });
+      };
+
+      function generateBase64Subscription() {
+        const links = [];
+        conversionResults.forEach(res => {
+          const subtype = getInputSubtype(res.parsed);
+          
+          if (subtype === 'reality') {
+            if (res.generated.reality) links.push(res.generated.reality);
+          } else if (subtype === 'xhttp') {
+            if (res.generated.xhttp) links.push(res.generated.xhttp);
+          }
+          
+          // Hysteria2 is generated for all (VLESS Reality, VLESS XHTTP, Hysteria2)
+          if (res.generated.hysteria) links.push(res.generated.hysteria);
+        });
+        
+        // Return unique non-empty links
+        return Array.from(new Set(links.filter(l => !!l)));
+      }
+
+      window.copyBase64Subscription = function() {
+        const links = generateBase64Subscription();
+        if (links.length === 0) {
+          showToast('Нет ссылок для создания подписки', 'error');
+          return;
+        }
+
+        const plainTextData = links.join('\n');
+        
+        // Safe base64 encoding (UTF-8 compatible)
+        let base64Subscription = '';
+        try {
+          base64Subscription = btoa(unescape(encodeURIComponent(plainTextData)));
+        } catch (e) {
+          showToast('Ошибка кодирования Base64', 'error');
+          return;
+        }
+
+        const btn = $('btnCopySubscription');
+        const originalText = btn.innerHTML;
+
+        navigator.clipboard.writeText(base64Subscription).then(() => {
+          showToast('Подписка Base64 скопирована!');
+          
+          // UI success state
+          btn.innerHTML = '<span>✅</span> Скопировано!';
+          btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-500', 'text-white');
+          btn.classList.add('bg-lime', 'hover:bg-lime/90', 'text-black');
+          
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('bg-lime', 'hover:bg-lime/90', 'text-black');
+            btn.classList.add('bg-indigo-600', 'hover:bg-indigo-500', 'text-white');
+          }, 2000);
+        }).catch(err => {
+          showToast('Не удалось скопировать', 'error');
+          console.error(err);
         });
       };
 
