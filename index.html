@@ -1,1612 +1,1420 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'">
-<title>⚡ VLESS → Hysteria2 Converter</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Unbounded:wght@400;500;600;700&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ ZeroBlock VPN Link Converter</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            lime: {
+              DEFAULT: '#CCFF00',
+              dim: '#99cc00',
+              glow: 'rgba(204, 255, 0, 0.15)',
+            },
+            cyan: {
+              DEFAULT: '#00D1FF',
+              glow: 'rgba(0, 209, 255, 0.15)',
+            },
+            darkBg: '#050508',
+            errorRed: '#FF2A55',
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+            heading: ['Unbounded', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- QR Code Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-/* ===== RESET ===== */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{margin:0;background:#000000;color:#e0e0e0;font-family:'Inter',-apple-system,'Segoe UI','Roboto',sans-serif;font-size:clamp(0.875rem,2vw,1rem);line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-img,svg{display:block;max-width:100%}
-a{color:var(--color-lime);text-decoration:none}
-a:hover{text-decoration:underline}
-button{font-family:inherit}
-code,pre{font-family:'JetBrains Mono','Fira Code','Cascadia Code','Consolas',monospace}
-input,textarea,select{font-family:inherit}
-::selection{background:rgba(0,209,255,0.2);color:var(--neon-green)}
-::-moz-selection{background:rgba(0,209,255,0.2);color:var(--neon-green)}
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:#000000}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:9999px}
-::-webkit-scrollbar-thumb:hover{background:#6b6b7b}
-*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) #000000}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.fade-enter,.fade-enter-fast,.fade-enter-slow,.pulse,.shake{animation:none!important;opacity:1!important;transform:none!important}.bg-circle{animation:none!important;opacity:.15!important}}
-
-/* ===== CSS VARIABLES ===== */
-:root{
---color-lime:#CCFF00;
---neon-green:#CCFF00;
---neon-green-dim:#99cc00;
---neon-cyan-soft:rgba(0,209,255,0.15);
---neon-cyan-glow:rgba(0,209,255,0.4);
---neon-cyan:#00D1FF;
---error-red:#FF2A55;
---error-red-soft:rgba(255,42,85,0.15);
---error-bg:rgba(255,42,85,0.08);
---success-green:#CCFF00;
---text-primary:#e0e0e0;
---text-secondary:#9e9eb0;
---text-muted:#6b6b7b;
---text-heading:#ffffff;
---bg-primary:#000000;
---bg-secondary:#050508;
---bg-card:rgba(10,10,15,0.6);
---bg-input:#050508;
---bg-hover:rgba(255,255,255,0.04);
---border-default:rgba(255,255,255,0.06);
---border-hover:rgba(255,255,255,0.12);
---font-heading:'Unbounded','Inter',-apple-system,sans-serif;
---font-mono:'JetBrains Mono','Fira Code','Cascadia Code','Consolas',monospace;
---font-body:'Inter',-apple-system,'Segoe UI','Roboto',sans-serif;
---space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;
---radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;
---page-width:min(720px,calc(100% - 48px));
---card-padding:20px;
---input-padding:12px 16px;
---btn-padding:12px 24px;
---section-gap:24px;
---transition-fast:150ms ease-out;
---transition-normal:250ms ease-out;
---transition-spring:350ms cubic-bezier(0.34,1.56,0.64,1);
-
-/* ===== GLASS ===== */
---glass-bg:rgba(255,255,255,0.03);
---glass-blur:24px;
---glass-border-color:rgba(255,255,255,0.06);
---glass-shadow:0 8px 32px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.03);
---glass-accent-shadow:0 8px 32px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.03),0 0 16px rgba(204,255,0,0.15);
-
-/* ===== LIQUID / ACCENT ===== */
---liquid-filter:none;
---liquid-color:linear-gradient(135deg,var(--neon-green) 0%,var(--neon-green-dim) 100%);
---liquid-shadow:0 0 12px rgba(204,255,0,0.2),inset 0 1px 0 rgba(255,255,255,0.1);
---liquid-hover-shadow:0 0 20px rgba(204,255,0,0.6),0 4px 16px rgba(0,0,0,0.5);
-
-/* ===== METAL ===== */
---metal-shadow:0 3px 8px rgba(0,0,0,0.08);
---metal-hover-shadow:0 4px 12px rgba(0,0,0,0.12);
---metal-radius:12px;
-
-/* ===== GOO / BG ===== */
---goo-filter:url(#gooFilter);
---bg-circle-size:clamp(240px,40vw,480px);
-}
-
-/* ===== LAYOUT ===== */
-#app{min-height:100vh;background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-body);position:relative;z-index:1}
-.container{width:var(--page-width);margin:0 auto;padding:var(--space-10) 0 var(--space-12);display:flex;flex-direction:column;gap:var(--section-gap)}
-
-/* ===== HEADER ===== */
-header{text-align:center;padding-bottom:var(--space-4)}
-.logo{font-size:clamp(2rem,5vw,3rem);display:block;margin-bottom:var(--space-2)}
-h1{font-family:var(--font-heading);font-size:clamp(1.5rem,4vw,2.25rem);font-weight:700;color:var(--text-heading);letter-spacing:-.02em;line-height:1.2}
-h1 .accent{color:var(--neon-green)}
-.subtitle{color:var(--text-muted);font-size:clamp(0.875rem,2vw,1rem);margin-top:var(--space-2);font-family:var(--font-mono)}
-.subtitle .arrow{color:var(--neon-green)}
-
-/* ===== SECTION HEADERS ===== */
-.section-header{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);padding-bottom:var(--space-3);border-bottom:1px solid var(--glass-border-color)}
-.section-title{color:var(--text-heading);font-family:var(--font-heading);font-size:clamp(0.95rem,2.5vw,1.25rem);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
-.section-title::before{content:'\258C';color:var(--neon-green);margin-right:var(--space-2)}
-
-/* ===== INPUT GROUP ===== */
-.input-group{position:relative;width:100%}
-.input-link{width:100%;min-height:56px;padding:var(--space-4);background:var(--bg-input);border:1px solid var(--border-default);border-radius:var(--radius-md);color:var(--text-primary);font-family:var(--font-mono);font-size:clamp(0.8125rem,1.8vw,0.9375rem);line-height:1.5;outline:none;transition:border-color var(--transition-fast),box-shadow var(--transition-fast);resize:vertical}
-.input-link::placeholder{color:var(--text-muted);font-family:var(--font-mono);font-size:clamp(0.75rem,1.5vw,0.875rem);opacity:.7}
-.input-link:focus{border-color:var(--neon-green);box-shadow:0 0 0 2px rgba(204,255,0,0.1),0 0 12px rgba(204,255,0,0.25)}
-.input-link.error{border-color:var(--error-red);box-shadow:0 0 0 2px var(--error-red-soft),0 0 12px var(--error-red-soft)}
-.input-link.filled{border-color:rgba(204,255,0,0.25)}
-.input-error{display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-2);color:var(--error-red);font-size:clamp(0.75rem,1.5vw,0.875rem);line-height:1.5;animation:fadeSlideIn 250ms ease-out}
-
-/* ===== CARDS (GLASS) ===== */
-.card,
-.result-panel,
-.history-item {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
-  border: 1px solid var(--glass-border-color);
-  box-shadow: var(--glass-shadow);
-  isolation: isolate;
-  position: relative;
-  border-radius: var(--radius-md);
-}
-
-.card { padding: var(--card-padding); }
-.card-accent {
-  border-left: 1.5px solid var(--neon-green);
-  box-shadow: var(--glass-accent-shadow);
-}
-
-.result-panel {
-  border: 1px solid rgba(0, 209, 255, 0.12);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.8),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03),
-    0 0 16px rgba(0, 209, 255, 0.15);
-  padding: var(--card-padding);
-}
-
-/* Glass noise texture via ::before */
-.card::before,
-.result-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  filter: url(#glassTexture);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.card > *,
-.result-panel > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* ===== LIQUID BUTTON (Convert) ===== */
-.btn-convert{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:var(--space-2);
-  padding:var(--btn-padding);
-  min-height:48px;
-  width:100%;
-  background:var(--liquid-color);
-  color:#000;
-  font-family:var(--font-heading);
-  font-size:clamp(0.875rem,2vw,1rem);
-  font-weight:700;
-  letter-spacing:.02em;
-  text-transform:uppercase;
-  border:none;
-  border-radius:var(--radius-full);
-  cursor:pointer;
-  box-shadow:var(--liquid-shadow);
-  position:relative;
-  overflow:hidden;
-  transition:transform 250ms cubic-bezier(0.34,1.56,0.64,1),box-shadow 250ms ease-out
-}
-.btn-convert::before{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:linear-gradient(135deg,transparent 35%,rgba(255,255,255,0.3) 45%,rgba(255,255,255,0.5) 50%,rgba(255,255,255,0.3) 55%,transparent 65%);
-  transform:translateX(-100%) skewX(-15deg);
-  transition:transform .6s cubic-bezier(0.34,1.56,0.64,1)
-}
-.btn-convert:hover::before{
-  transform:translateX(200%) skewX(-15deg)
-}
-.btn-convert:hover{
-  transform:translateY(-2px);
-  box-shadow:var(--liquid-hover-shadow)
-}
-.btn-convert:active{
-  transform:scale(0.97) translateY(0);
-  box-shadow:inset 0 2px 4px rgba(0,0,0,0.3);
-  transition-duration:80ms
-}
-.btn-convert:disabled{
-  opacity:.35;
-  cursor:not-allowed;
-  transform:none;
-  box-shadow:none
-}
-.btn-convert:focus-visible{
-  outline:2px solid var(--neon-green);
-  outline-offset:3px
-}
-
-/* ===== SECONDARY BUTTON (Copy) ===== */
-.btn-copy{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:var(--space-2);
-  padding:var(--space-3) var(--space-5);
-  min-height:40px;
-  background:rgba(0,209,255,0.06);
-  color:var(--neon-cyan);
-  border:1px solid rgba(0,209,255,0.25);
-  border-radius:var(--radius-sm);
-  cursor:pointer;
-  transition:all 250ms cubic-bezier(0.34,1.56,0.64,1);
-  position:relative;
-  overflow:hidden;
-  white-space:nowrap;
-  font-family:var(--font-mono);
-  font-size:clamp(0.75rem,1.5vw,0.875rem);
-  font-weight:500
-}
-.btn-copy:hover{
-  background:rgba(0,209,255,0.12);
-  border-color:var(--neon-cyan);
-  box-shadow:0 0 12px rgba(0,209,255,0.2);
-  transform:translateY(-1px)
-}
-.btn-copy:active{transform:scale(0.96);background:rgba(0,209,255,0.2)}
-.btn-copy.copied{background:var(--neon-cyan);color:#000;border-color:var(--neon-cyan);animation:pulseCopy .5s ease-out}
-.btn-copy:focus-visible{outline:2px solid var(--neon-cyan);outline-offset:3px}
-
-/* ===== METAL BUTTONS (Primary / Metal / Gold) ===== */
-.metal-btn{
-  position:relative;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  height:44px;
-  padding:1.25px;
-  border:none;
-  border-radius:var(--metal-radius);
-  cursor:pointer;
-  transform:translateY(0) scale(1);
-  transition:transform 250ms cubic-bezier(0.1,0.4,0.2,1),box-shadow 250ms cubic-bezier(0.1,0.4,0.2,1);
-  transform-origin:center center;
-  will-change:transform;
-  overflow:visible;
-  box-shadow:var(--metal-shadow)
-}
-.metal-btn::before{
-  content:'';
-  position:absolute;
-  inset:0;
-  border-radius:inherit;
-  z-index:0;
-  background:linear-gradient(to bottom,#000000,#a0a0a0)
-}
-.metal-btn::after{
-  content:'';
-  position:absolute;
-  inset:1px;
-  border-radius:calc(var(--metal-radius) - 1px);
-  z-index:1;
-  background:linear-gradient(to bottom,#00D1FF,#00cc34,#009926)
-}
-.metal-btn__inner{
-  position:relative;
-  z-index:2;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:100%;
-  height:100%;
-  margin:1px;
-  padding:8px 24px;
-  border-radius:calc(var(--metal-radius) - 2px);
-  background:linear-gradient(to bottom,#00D1FF,rgba(0,255,65,0.4));
-  color:#fff;
-  font-family:var(--font-heading);
-  font-size:.875rem;
-  font-weight:600;
-  line-height:1;
-  text-shadow:0 -1px 0 rgba(6,78,59,1);
-  transition:transform 250ms cubic-bezier(0.1,0.4,0.2,1),filter 250ms ease-out;
-  transform-origin:center center
-}
-
-/* Metal variants */
-.metal-btn--primary::before{background:linear-gradient(to bottom,#000000,#a0a0a0)}
-.metal-btn--primary::after{background:linear-gradient(to bottom,#00D1FF,#00cc34,#009926)}
-.metal-btn--primary .metal-btn__inner{background:linear-gradient(to bottom,#00D1FF,rgba(0,255,65,0.4));color:#fff;text-shadow:0 -1px 0 rgba(6,78,59,1)}
-
-.metal-btn--grey::before{background:linear-gradient(to bottom,#000000,#a0a0a0)}
-.metal-btn--grey::after{background:linear-gradient(to bottom,#fafafa,#3e3e3e,#e5e5e5)}
-.metal-btn--grey .metal-btn__inner{background:linear-gradient(to bottom,#b9b9b9,#969696);color:#fff;text-shadow:0 -1px 0 rgba(80,80,80,1)}
-
-.metal-btn--gold::before{background:linear-gradient(to bottom,#917100,#ead98f)}
-.metal-btn--gold::after{background:linear-gradient(to bottom,#fffddd,#856807,#fff1b3)}
-.metal-btn--gold .metal-btn__inner{background:linear-gradient(to bottom,#ffeba1,#9b873f);color:#fffde5;text-shadow:0 -1px 0 rgba(178,140,2,1)}
-
-.metal-btn:hover{box-shadow:var(--metal-hover-shadow)}
-.metal-btn:hover .metal-btn__inner{filter:brightness(1.02)}
-.metal-btn:active{transform:translateY(2.5px) scale(0.99);box-shadow:0 1px 2px rgba(0,0,0,0.15)}
-.metal-btn:active .metal-btn__inner{transform:scale(0.97)}
-.metal-btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
-.metal-btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important}
-
-.btn-ghost{
-  display:inline-flex;
-  align-items:center;
-  gap:var(--space-2);
-  padding:var(--space-2) var(--space-4);
-  background:transparent;
-  color:var(--text-muted);
-  font-family:var(--font-body);
-  font-size:.75rem;
-  border:1px solid var(--glass-border-color);
-  border-radius:var(--radius-sm);
-  cursor:pointer;
-  transition:all var(--transition-fast)
-}
-.btn-ghost:hover{color:var(--error-red);border-color:var(--error-red-soft);background:var(--error-bg)}
-
-/* ===== PREVIEW GRID ===== */
-.preview-grid{display:grid;grid-template-columns:110px 1fr;gap:var(--space-2) var(--space-4);font-size:clamp(0.75rem,1.5vw,0.875rem)}
-.preview-label{color:var(--text-muted);font-family:var(--font-heading);font-weight:500;text-transform:uppercase;letter-spacing:.08em}
-.preview-value{color:var(--text-primary);font-family:var(--font-mono);word-break:break-all}
-.preview-value.highlight{color:var(--neon-cyan)}
-.preview-divider{grid-column:1/-1;border:none;border-top:1px solid var(--glass-border-color);margin:var(--space-1) 0}
-
-/* ===== SETTINGS ===== */
-.settings-group{display:flex;flex-direction:column;gap:var(--space-4)}
-.setting-row{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-2) 0}
-.setting-label{flex-shrink:0;color:var(--text-secondary);font-size:clamp(0.75rem,1.5vw,0.875rem);font-weight:500;min-width:150px}
-.input-speed-wrapper{display:flex;align-items:center;gap:var(--space-3);flex:1}
-.input-range{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:var(--border-default);border-radius:var(--radius-full);outline:none;cursor:pointer}
-.input-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;background:var(--neon-green);border-radius:50%;cursor:pointer;box-shadow:0 0 6px var(--neon-cyan-glow);transition:transform var(--transition-fast)}
-.input-range::-webkit-slider-thumb:hover{transform:scale(1.2)}
-.input-range::-moz-range-thumb{width:18px;height:18px;background:var(--neon-green);border:none;border-radius:50%;cursor:pointer;box-shadow:0 0 6px var(--neon-cyan-glow)}
-.input-speed-value{min-width:56px;text-align:right;color:var(--neon-green);font-family:var(--font-mono);font-size:clamp(0.875rem,2vw,1rem);font-weight:600}
-
-/* Toggle */
-.toggle{position:relative;width:44px;height:24px;flex-shrink:0;cursor:pointer}
-.toggle input{position:absolute;opacity:0;width:0;height:0}
-.toggle-track{position:absolute;inset:0;background:var(--border-default);border-radius:var(--radius-full);transition:background var(--transition-fast)}
-.toggle-track::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:var(--text-muted);border-radius:50%;transition:all var(--transition-spring)}
-.toggle input:checked+.toggle-track{background:var(--neon-cyan-soft)}
-.toggle input:checked+.toggle-track::after{transform:translateX(20px);background:var(--neon-cyan);box-shadow:0 0 8px rgba(0,209,255,0.6)}
-.toggle input:focus-visible+.toggle-track{box-shadow:0 0 0 3px var(--neon-cyan-soft)}
-
-/* Text input */
-.input-text{width:100%;padding:var(--input-padding);background:var(--bg-input);border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font-mono);font-size:clamp(0.75rem,1.5vw,0.875rem);outline:none;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
-.input-text:focus{border-color:var(--neon-green);box-shadow:0 0 0 2px rgba(204,255,0,0.1),0 0 12px rgba(204,255,0,0.25)}
-.input-text::placeholder{color:var(--text-muted);opacity:.6}
-.textarea-extra{min-height:64px;resize:vertical;font-size:clamp(0.75rem,1.5vw,0.875rem)}
-
-/* ===== ADVANCED SETTINGS ===== */
-.advanced-trigger{
-  display:inline-flex;
-  align-items:center;
-  gap:var(--space-2);
-  cursor:pointer;
-  margin-top:var(--space-2);
-  color:var(--text-muted);
-  font-family:var(--font-heading);
-  font-size:0.75rem;
-  font-weight:600;
-  text-transform:uppercase;
-  letter-spacing:0.08em;
-  user-select:none;
-  transition:color var(--transition-fast)
-}
-.advanced-trigger:hover{color:var(--neon-green)}
-.advanced-arrow{transition:transform var(--transition-fast)}
-.advanced-content{
-  display:flex;
-  flex-direction:column;
-  gap:var(--space-4);
-  margin-top:var(--space-2);
-  border-top:1px dashed rgba(255,255,255,0.06);
-  padding-top:var(--space-4);
-  animation:fadeSlideIn 250ms ease-out
-}
-
-/* ===== HELP SECTION ===== */
-.help-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  cursor: pointer;
-  margin-top: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  background: rgba(0, 209, 255, 0.03);
-  border: 1px dashed rgba(0, 209, 255, 0.25);
-  border-radius: var(--radius-sm);
-  color: var(--neon-cyan);
-  font-family: var(--font-heading);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  user-select: none;
-  transition: all var(--transition-fast);
-}
-.help-trigger:hover {
-  background: rgba(0, 209, 255, 0.08);
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 12px rgba(0, 209, 255, 0.15);
-}
-.help-arrow {
-  display: inline-block;
-  transition: transform var(--transition-fast);
-}
-.help-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  margin-top: var(--space-3);
-  animation: fadeSlideIn 250ms ease-out;
-}
-.help-item {
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px solid var(--glass-border-color);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3) var(--space-4);
-}
-.help-title {
-  color: var(--neon-green);
-  font-family: var(--font-heading);
-  font-size: 0.875rem;
-  font-weight: 700;
-  margin-bottom: var(--space-3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  padding-bottom: var(--space-2);
-}
-.help-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-}
-@media (max-width: 640px) {
-  .help-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-3);
-  }
-}
-.help-column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-.help-badge {
-  display: inline-block;
-  align-self: flex-start;
-  font-family: var(--font-heading);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 4px;
-  letter-spacing: 0.05em;
-}
-.help-badge--success {
-  background: rgba(0, 255, 65, 0.1);
-  color: var(--neon-green);
-  border: 1px solid rgba(0, 255, 65, 0.3);
-}
-.help-badge--danger {
-  background: rgba(255, 62, 108, 0.1);
-  color: #FF3E6C;
-  border: 1px solid rgba(255, 62, 108, 0.3);
-}
-.help-column ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-.help-column li {
-  font-size: 0.8125rem;
-  line-height: 1.4;
-  color: var(--text-secondary);
-  position: relative;
-  padding-left: var(--space-3);
-}
-.help-column li::before {
-  content: "•";
-  color: var(--text-muted);
-  position: absolute;
-  left: 0;
-}
-
-/* ===== TOOLTIPS ===== */
-.tooltip-trigger{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:14px;
-  height:14px;
-  border-radius:50%;
-  background:rgba(255,255,255,0.08);
-  color:var(--text-muted);
-  font-size:9px;
-  font-family:var(--font-body);
-  font-weight:bold;
-  cursor:help;
-  position:relative;
-  vertical-align:middle;
-  margin-left:var(--space-1);
-  transition:all var(--transition-fast)
-}
-.tooltip-trigger:hover{
-  background:rgba(0,209,255,0.15);
-  color:var(--neon-cyan);
-  box-shadow:0 0 6px rgba(0,209,255,0.5)
-}
-.tooltip-trigger::after{
-  content:attr(data-tooltip);
-  position:absolute;
-  bottom:135%;
-  left:50%;
-  transform:translateX(-50%) translateY(6px);
-  width:260px;
-  padding:var(--space-2) var(--space-3);
-  background:rgba(10,10,15,0.95);
-  backdrop-filter:blur(8px);
-  border:1px solid var(--neon-cyan);
-  border-radius:var(--radius-sm);
-  color:var(--text-primary);
-  font-family:var(--font-body);
-  font-size:0.75rem;
-  font-weight:normal;
-  text-transform:none;
-  letter-spacing:normal;
-  line-height:1.4;
-  box-shadow:0 4px 16px rgba(0,209,255,0.25);
-  opacity:0;
-  pointer-events:none;
-  transition:all 200ms cubic-bezier(0.19,1,0.22,1);
-  z-index:100;
-  text-align:left;
-  white-space:normal
-}
-.tooltip-trigger:hover::after{
-  opacity:1;
-  transform:translateX(-50%) translateY(0)
-}
-
-/* ===== RESULT PANEL ===== */
-.result-link{display:block;padding:var(--space-3);margin-bottom:var(--space-4);background:rgba(10,10,15,0.8);border:1px solid var(--border-default);border-radius:var(--radius-sm);color:var(--neon-cyan);font-family:var(--font-mono);font-size:clamp(0.8125rem,1.8vw,0.9375rem);line-height:1.5;word-break:break-all;user-select:all}
-.result-actions{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
-.copy-feedback{color:var(--neon-cyan);font-size:clamp(0.75rem,1.5vw,0.875rem);font-weight:500;animation:fadeIn 200ms ease-out}
-
-/* ===== HISTORY ===== */
-.history-list{display:flex;flex-direction:column;gap:var(--space-3)}
-.history-item{
-  display:flex;
-  align-items:center;
-  gap:var(--space-3);
-  padding:var(--space-3);
-  cursor:pointer;
-  transition:all var(--transition-fast)
-}
-.history-item:hover{
-  background:rgba(30,30,46,0.4);
-  backdrop-filter:blur(24px) saturate(1.6);
-  border-color:rgba(204,255,0,0.2)
-}
-.history-item:active{transform:scale(0.99)}
-.history-time{color:var(--text-muted);font-size:.75rem;white-space:nowrap;flex-shrink:0}
-.history-icons{color:var(--text-muted);font-family:var(--font-mono);font-size:.75rem;flex-shrink:0}
-.history-link-preview{color:var(--text-secondary);font-family:var(--font-mono);font-size:.75rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
-.history-arrow{color:var(--neon-green);font-size:clamp(0.875rem,2vw,1rem);flex-shrink:0}
-.history-actions{margin-top:var(--space-4);display:flex;justify-content:flex-end}
-.history-empty{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);padding:var(--space-8) 0;color:var(--text-muted);font-size:clamp(0.75rem,1.5vw,0.875rem);text-align:center}
-
-/* ===== NOTIFICATION ===== */
-.notification{position:fixed;top:var(--space-5);left:50%;transform:translateX(-50%);padding:var(--space-3) var(--space-5);background:rgba(15,15,25,0.75);backdrop-filter:blur(12px);border:1px solid var(--neon-green);border-radius:var(--radius-md);color:var(--neon-green);font-family:var(--font-mono);font-size:clamp(0.75rem,1.5vw,0.875rem);z-index:1000;box-shadow:0 0 12px rgba(204,255,0,0.25);animation:fadeSlideIn 250ms ease-out}
-.notification.error{border-color:var(--error-red);color:var(--error-red);box-shadow:0 0 12px rgba(255,42,85,0.3)}
-
-/* ===== ANIMATIONS ===== */
-@keyframes fadeSlideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes pulseCopy{0%{transform:scale(1)}40%{transform:scale(1.08)}60%{transform:scale(0.96)}100%{transform:scale(1)}}
-@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-@keyframes glowPulse{0%,100%{box-shadow:0 0 6px var(--neon-cyan-glow)}50%{box-shadow:0 0 16px var(--neon-cyan-glow),0 0 30px rgba(0,255,65,0.2)}}
-
-/* ===== BACKGROUND ANIMATED CIRCLES ===== */
-@keyframes bgCircleFloat1{
-  0%,100%{transform:translate(0,0) scale(1)}
-  25%{transform:translate(60px,-80px) scale(1.05)}
-  50%{transform:translate(-40px,40px) scale(0.95)}
-  75%{transform:translate(30px,60px) scale(1.02)}
-}
-@keyframes bgCircleFloat2{
-  0%,100%{transform:translate(0,0) scale(1)}
-  25%{transform:translate(-70px,50px) scale(1.08)}
-  50%{transform:translate(50px,-30px) scale(0.92)}
-  75%{transform:translate(-20px,-70px) scale(1.03)}
-}
-@keyframes bgCircleFloat3{
-  0%,100%{transform:translate(0,0) scale(1)}
-  20%{transform:translate(40px,60px) scale(1.04)}
-  40%{transform:translate(-50px,-40px) scale(0.96)}
-  60%{transform:translate(70px,-20px) scale(1.02)}
-  80%{transform:translate(-30px,50px) scale(0.98)}
-}
-
-.bg-circle{
-  position:fixed;
-  border-radius:50%;
-  pointer-events:none;
-  filter:var(--goo-filter) blur(40px);
-  opacity:.15;
-  z-index:-1;
-  will-change:transform;
-  mix-blend-mode:hard-light;
-}
-
-.bg-circle--1{
-  width:var(--bg-circle-size);
-  height:var(--bg-circle-size);
-  background:radial-gradient(circle at center,rgba(204,255,0,0.3) 0,rgba(204,255,0,0) 70%);
-  top:10%;
-  left:5%;
-  animation:bgCircleFloat1 22s ease-in-out infinite;
-}
-.bg-circle--2{
-  width:calc(var(--bg-circle-size) * 0.8);
-  height:calc(var(--bg-circle-size) * 0.8);
-  background:radial-gradient(circle at center,rgba(0,209,255,0.2) 0,rgba(0,209,255,0) 70%);
-  top:55%;
-  right:5%;
-  animation:bgCircleFloat2 26s ease-in-out infinite;
-  animation-delay:-8s;
-}
-.bg-circle--3{
-  width:calc(var(--bg-circle-size) * 1.2);
-  height:calc(var(--bg-circle-size) * 1.2);
-  background:radial-gradient(circle at center,rgba(255,42,85,0.08) 0,rgba(255,42,85,0) 70%);
-  bottom:5%;
-  left:20%;
-  animation:bgCircleFloat3 30s ease-in-out infinite;
-  animation-delay:-15s;
-}
-
-.fade-enter{animation:fadeSlideIn var(--transition-normal) ease-out both}
-.hidden{display:none!important}
-
-/* ===== RESPONSIVE ===== */
-@media (min-width:768px){
-:root{--page-width:min(680px,90%);--card-padding:24px}
-.preview-grid{grid-template-columns:130px 1fr}
-.setting-label{min-width:170px;font-size:clamp(0.875rem,2vw,1rem)}
-}
-@media (min-width:1024px){
-:root{--page-width:min(720px,80%);--btn-padding:16px 32px}
-}
-@media (max-width:480px){
-.setting-row{flex-direction:column;align-items:stretch;gap:var(--space-2)}
-.setting-label{min-width:unset}
-.input-speed-wrapper{width:100%}
-.preview-grid{grid-template-columns:1fr;gap:var(--space-1)}
-.preview-label{font-size:.75rem;margin-top:var(--space-2)}
-.result-actions{flex-direction:column;align-items:stretch}
-.btn-copy{width:100%;justify-content:center}
-.section-title{font-size:clamp(0.875rem,2vw,1rem)}
-.history-item{flex-wrap:wrap;gap:var(--space-2)}
-.history-time{width:100%;font-size:.75rem}
-.btn-convert,.btn-copy,.btn-ghost,.metal-btn{min-height:44px}
-.toggle{width:52px;height:28px;align-self:flex-start}
-.toggle-track::after{width:22px;height:22px;top:3px;left:3px}
-.toggle input:checked+.toggle-track::after{transform:translateX(24px)}
-.input-link{min-height:48px;font-size:16px}
-}
-</style>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #050508;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    
+    /* Background Blur Circles Animation */
+    @keyframes float1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.05); }
+      66% { transform: translate(-20px, 20px) scale(0.95); }
+    }
+    @keyframes float2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-40px, 40px) scale(1.1); }
+    }
+    .animate-float-1 {
+      animation: float1 15s ease-in-out infinite;
+    }
+    .animate-float-2 {
+      animation: float2 18s ease-in-out infinite;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-darkBg text-zinc-100 font-sans min-h-screen relative overflow-x-hidden selection:bg-cyan/20 selection:text-cyan">
 
-<!-- ===== SVG FILTERS ===== -->
-<svg style="position:absolute;width:0;height:0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <!-- Glass noise texture -->
-    <filter id="glassTexture" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.65 0.45" numOctaves="3" seed="17" result="noise" />
-      <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.04 0" in="noise" result="fadedNoise" />
-      <feComposite in="fadedNoise" in2="SourceGraphic" operator="in" result="texture" />
-      <feBlend mode="multiply" in="texture" in2="SourceGraphic" />
-    </filter>
+  <!-- ===== BACKGROUND BLUR DECORATIONS ===== -->
+  <div class="absolute top-10 left-10 w-72 h-72 md:w-96 md:h-96 rounded-full bg-lime/10 blur-[80px] md:blur-[120px] pointer-events-none animate-float-1 z-0"></div>
+  <div class="absolute bottom-20 right-10 w-80 h-80 md:w-[450px] md:h-[450px] rounded-full bg-cyan/10 blur-[100px] md:blur-[150px] pointer-events-none animate-float-2 z-0"></div>
 
-    <!-- Glass specular (from Anton's code) -->
-    <filter id="glassSpecular" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.001 0.005" numOctaves="1" seed="17" result="turbulence" />
-      <feComponentTransfer in="turbulence" result="mapped">
-        <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
-        <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
-        <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
-      </feComponentTransfer>
-      <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
-      <feSpecularLighting in="softMap" surfaceScale="5" specularConstant="1" specularExponent="100" lighting-color="white" result="specLight">
-        <fePointLight x="-200" y="-200" z="300" />
-      </feSpecularLighting>
-      <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litImage" />
-      <feDisplacementMap in="SourceGraphic" in2="softMap" scale="200" xChannelSelector="R" yChannelSelector="G" />
-    </filter>
-
-    <!-- Liquid button filter -->
-    <filter id="liquidFilter" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
-      <feTurbulence id="liquidNoise" type="fractalNoise" baseFrequency="0.015" numOctaves="3" seed="2" result="noise" />
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" result="displaced" />
-      <feGaussianBlur in="displaced" stdDeviation="0.3" result="final" />
-      <feComposite in="final" in2="SourceGraphic" operator="in" />
-    </filter>
-
-    <!-- Goo filter for background circles -->
-    <filter id="gooFilter" color-interpolation-filters="sRGB">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo" />
-      <feBlend in="SourceGraphic" in2="goo" />
-    </filter>
-  </defs>
-</svg>
-
-<!-- ===== ANIMATED BACKGROUND CIRCLES ===== -->
-<div class="bg-circle bg-circle--1"></div>
-<div class="bg-circle bg-circle--2"></div>
-<div class="bg-circle bg-circle--3"></div>
-
-<div id="app">
-  <div class="container">
+  <div class="container mx-auto px-4 py-8 max-w-4xl relative z-10">
+    
     <!-- HEADER -->
-    <header>
-      <span class="logo">⚡</span>
-      <h1><span class="accent">VLESS</span> → Hysteria2</h1>
-      <p class="subtitle"><span class="arrow">▸</span> Конвертируй VLESS и XHTTP ссылки за клик <span class="arrow">◂</span></p>
+    <header class="text-center mb-8">
+      <div class="inline-flex items-center justify-center p-3 bg-zinc-900/60 border border-zinc-800 rounded-2xl mb-4 shadow-xl shadow-black/40">
+        <span class="text-4xl animate-pulse">⚡</span>
+      </div>
+      <h1 class="font-heading text-2xl md:text-4xl font-bold tracking-tight text-white mb-2">
+        ZeroBlock <span class="text-lime">Converter</span>
+      </h1>
+      <p class="font-mono text-xs md:text-sm text-zinc-400">
+        <span class="text-lime">▸</span> Пакетный кросс-конвертер VPN-ссылок под RouteRich / OpenWrt <span class="text-lime">◂</span>
+      </p>
     </header>
 
-    <!-- INPUT -->
-    <section>
-      <div class="input-group">
-        <textarea id="inputLink" class="input-link" rows="2" placeholder="🔗 Вставьте vless:// или xhttp:// ссылку" spellcheck="false"></textarea>
-        <div id="inputError" class="input-error hidden"></div>
-      </div>
-    </section>
-
-    <!-- CONVERT BUTTON -->
-    <button id="btnConvert" class="btn-convert" disabled>🚀 Конвертировать</button>
-
-    <!-- PARSED PREVIEW -->
-    <section id="previewSection" class="hidden">
-      <div class="section-header">
-        <h2 class="section-title">Распарсенные данные</h2>
-      </div>
-      <div class="card card-accent">
-        <div class="preview-grid" id="previewGrid">
-          <div class="preview-label">UUID</div><div class="preview-value highlight" id="pvUuid">—</div>
-          <hr class="preview-divider">
-          <div class="preview-label">Host</div><div class="preview-value" id="pvHost">—</div>
-          <hr class="preview-divider">
-          <div class="preview-label">Port</div><div class="preview-value" id="pvPort">—</div>
-          <hr class="preview-divider">
-          <div class="preview-label">Type</div><div class="preview-value" id="pvType">—</div>
-          <hr class="preview-divider">
-          <div class="preview-label">SNI</div><div class="preview-value" id="pvSni">—</div>
-          <hr class="preview-divider">
-          <div class="preview-label">Encryption</div><div class="preview-value" id="pvEncryption">—</div>
-          <hr class="preview-divider">
-          <div class="preview-label">Flow</div><div class="preview-value" id="pvFlow">—</div>
-          <hr class="preview-divider">
-          <div class="preview-label">FP</div><div class="preview-value" id="pvFp">—</div>
-          <hr class="preview-divider">
-          <div class="preview-label">PBK</div><div class="preview-value" id="pvPbk">—</div>
-          <hr class="preview-divider">
-          <div class="preview-label">SID</div><div class="preview-value" id="pvSid">—</div>
-          <hr class="preview-divider">
-          <div class="preview-label">SPX</div><div class="preview-value" id="pvSpx">—</div>
+    <!-- MAIN APP STRUCTURE -->
+    <main class="space-y-6">
+      
+      <!-- INPUT SECTION -->
+      <section class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-4 mb-4">
+          <h2 class="font-heading text-sm md:text-base font-semibold tracking-wider text-zinc-200 flex items-center gap-2">
+            <span class="text-lime font-bold">▍</span>Входные ссылки
+          </h2>
+          
+          <!-- Input Mode Switcher -->
+          <div class="flex bg-zinc-950/80 p-1 rounded-lg border border-zinc-800">
+            <button id="btnModeSingle" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-zinc-800 text-white" onclick="switchInputMode('single')">
+              🔗 Одиночные
+            </button>
+            <button id="btnModeBulk" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-zinc-400 hover:text-zinc-200" onclick="switchInputMode('bulk')">
+              🗂️ Массовый ввод
+            </button>
+          </div>
         </div>
-      </div>
-    </section>
 
-    <!-- SETTINGS -->
-    <section>
-      <div class="section-header">
-        <h2 class="section-title">Настройки Hysteria2</h2>
-      </div>
-      <div class="card">
-        <div class="settings-group">
-          <!-- Speed -->
-          <div class="setting-row">
-            <span class="setting-label">⚡ Скорость провайдера <span class="tooltip-trigger" data-tooltip="⚡ [СКОРОСТЬ] Лимит скорости в Мбит/с. Ограничивает предельную скорость скачивания/отдачи, но не влияет на пинг (задержку).">ⓘ</span></span>
-            <div class="input-speed-wrapper">
-              <input type="range" id="speedRange" class="input-range" min="50" max="2000" value="500" step="10">
-              <span class="input-speed-value" id="speedValue">500</span>
+        <!-- Single inputs mode container -->
+        <div id="singleInputsContainer" class="space-y-3">
+          <div id="singleInputsList" class="space-y-3">
+            <!-- Dynamic inputs rows -->
+          </div>
+          <button type="button" onclick="addSingleInput()" class="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-zinc-800 hover:border-lime/40 rounded-xl text-xs font-mono text-zinc-400 hover:text-lime transition-all duration-200 bg-zinc-950/20 hover:bg-lime/5 group">
+            <span class="text-sm font-bold group-hover:scale-110 transition-transform">+</span> Добавить еще одну ссылку
+          </button>
+        </div>
+
+        <!-- Bulk textarea mode container -->
+        <div id="bulkInputContainer" class="hidden">
+          <textarea id="bulkTextarea" rows="8" 
+            class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-cyan hover:border-zinc-700 transition-all rounded-xl p-4 font-mono text-xs md:text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan" 
+            placeholder="Вставьте пул ссылок (каждая с новой строки)&#10;Пример:&#10;vless://96c89178-5e8e...#Германия&#10;hysteria2://mypassword@...#Нидерланды" spellcheck="false"></textarea>
+        </div>
+        
+        <!-- Validation Error Message -->
+        <div id="validationErrorBlock" class="hidden mt-3 p-3 bg-red-950/30 border border-red-900/50 rounded-xl text-xs text-red-450 flex items-start gap-2 animate-pulse">
+          <span class="text-sm">⚠️</span>
+          <span id="validationErrorText">Обнаружены ошибки валидации</span>
+        </div>
+      </section>
+
+      <!-- ORIGINAL CONVERT SETTINGS (Hysteria2 & Reality parameters) -->
+      <section class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl">
+        <div class="border-b border-zinc-800 pb-4 mb-4 flex items-center justify-between">
+          <h2 class="font-heading text-sm md:text-base font-semibold tracking-wider text-zinc-200 flex items-center gap-2">
+            <span class="text-cyan font-bold">▍</span>Настройки конвертации
+          </h2>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Speed range slider -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs font-mono">
+              <span class="text-zinc-400 flex items-center gap-1">
+                ⚡ Скорость провайдера
+                <span class="cursor-help text-zinc-600 hover:text-zinc-400" title="Лимит скорости Hysteria2 в Мбит/с. Ограничивает предельную скорость скачивания/отдачи.">ⓘ</span>
+              </span>
+              <span class="text-lime font-bold"><span id="speedValue">500</span> Мбит/с</span>
+            </div>
+            <div class="flex items-center gap-4">
+              <input type="range" id="speedRange" class="w-full h-1 bg-zinc-850 rounded-lg appearance-none cursor-pointer accent-lime" min="50" max="2000" value="500" step="10" oninput="updateSpeedValue(this.value)">
             </div>
           </div>
-          <!-- Fast Open -->
-          <div class="setting-row">
-            <span class="setting-label">🚀 Fast Open <span class="tooltip-trigger" data-tooltip="⚡ [СКОРОСТЬ] Ускоряет запуск сессии. Снижает задержку первого пакета (RTT), отправляя данные во время рукопожатия TLS.">ⓘ</span></span>
-            <label class="toggle">
-              <input type="checkbox" id="fastOpenToggle" checked>
-              <div class="toggle-track"></div>
-            </label>
-          </div>
-          <!-- SNI -->
-          <div class="setting-row">
-            <span class="setting-label">🎯 SNI <span class="tooltip-trigger" data-tooltip="🛡️ [АНОНИМНОСТЬ] Доменное имя в начале TLS рукопожатия. Должно выглядеть как легитимный белый сайт для обхода цензуры провайдера.">ⓘ</span></span>
-            <input type="text" id="sniInput" class="input-text" placeholder="Авто (из ссылки) или введите вручную" spellcheck="false">
-          </div>
-          <!-- Extra params -->
-          <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:var(--space-2)">
-            <span class="setting-label">📝 Доп. параметры <span class="tooltip-trigger" data-tooltip="⚙️ [НАСТРОЙКА] Дополнительные query-параметры, которые будут принудительно добавлены к результирующей Hysteria2 ссылке.">ⓘ</span></span>
-            <textarea id="extraParams" class="input-text textarea-extra" placeholder="obfs=xplus&amp;obfs-password=secret" spellcheck="false"></textarea>
-          </div>
 
-          <!-- Advanced Trigger -->
-          <div class="advanced-trigger" id="advancedTrigger">
-            <span>⚙️ Дополнительные настройки</span>
-            <span class="advanced-arrow" id="advancedArrow">▼</span>
-          </div>
-
-          <!-- Advanced Content -->
-          <div class="advanced-content hidden" id="advancedContent">
-            <!-- Insecure TLS -->
-            <div class="setting-row">
-              <span class="setting-label">🔒 Allow Insecure <span class="tooltip-trigger" data-tooltip="🛡️ [БЕЗОПАСНОСТЬ] Разрешает незащищенные TLS соединения. Включите, если сервер использует самоподписанный сертификат, но помните об угрозе MITM-атак.">ⓘ</span></span>
-              <label class="toggle">
-                <input type="checkbox" id="insecureToggle" checked>
-                <div class="toggle-track"></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <!-- Fast Open -->
+            <div class="flex items-center justify-between bg-zinc-950/40 p-3 border border-zinc-850 rounded-xl">
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold text-zinc-200">🚀 Fast Open</span>
+                <span class="text-[10px] text-zinc-500">Ускоряет запуск TLS рукопожатия</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="fastOpenToggle" class="sr-only peer" checked>
+                <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-400 after:border-zinc-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-lime peer-checked:after:bg-zinc-950"></div>
               </label>
             </div>
-            <!-- Pin SHA-256 -->
-            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:var(--space-2)">
-              <span class="setting-label">📌 Pin SHA-256 <span class="tooltip-trigger" data-tooltip="🛡️ [БЕЗОПАСНОСТЬ] SHA-256 хэш публичного ключа сервера. Позволяет безопасно использовать самоподписанные сертификаты без отключения TLS проверок.">ⓘ</span></span>
-              <input type="text" id="pinsha256Input" class="input-text" placeholder="SHA-256 хэш сертификата сервера" spellcheck="false">
-            </div>
-            <!-- Port Hopping -->
-            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:var(--space-2)">
-              <span class="setting-label">🔀 Port Hopping (hop) <span class="tooltip-trigger" data-tooltip="⚡ [СКОРОСТЬ/СТАБИЛЬНОСТЬ] Диапазон портов для обхода ограничений UDP со стороны провайдера. Пример: 20000-30000 или 1234,5678">ⓘ</span></span>
-              <input type="text" id="hopInput" class="input-text" placeholder="Диапазон портов (например, 20000-30000)" spellcheck="false">
-            </div>
-            <!-- MTU -->
-            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:var(--space-2)">
-              <span class="setting-label">📦 MTU <span class="tooltip-trigger" data-tooltip="⚙️ [СТАБИЛЬНОСТЬ] Максимальный размер пакета. Для домашнего интернета рекомендуется 1500 (стандарт) или 1492 (PPPoE). Для мобильного интернета - 1350 или 1200.">ⓘ</span></span>
-              <input type="number" id="mtuInput" class="input-text" placeholder="По умолчанию (например, 1500)" min="576" max="1500" spellcheck="false">
+
+            <!-- Global SNI Override -->
+            <div class="space-y-1">
+              <label class="text-xs font-mono text-zinc-400 flex items-center gap-1">
+                🎯 Переопределить SNI
+                <span class="cursor-help text-zinc-600 hover:text-zinc-400" title="Доменное имя TLS. Если пусто, используется SNI из ссылки или хост">ⓘ</span>
+              </label>
+              <input type="text" id="sniInput" 
+                class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-cyan transition-all rounded-lg px-3 py-2 text-xs md:text-sm text-zinc-200 font-mono focus:outline-none" 
+                placeholder="Автоматически из ссылки">
             </div>
           </div>
+
+          <!-- Reality pbk / sid global overrides -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div class="space-y-1">
+              <label class="text-xs font-mono text-zinc-400 flex items-center gap-1">
+                Reality PBK (Public Key)
+                <span class="cursor-help text-zinc-600 hover:text-zinc-400" title="Глобальный публичный ключ для VLESS REALITY (подставится вместо плейсхолдера)">ⓘ</span>
+              </label>
+              <input type="text" id="cfgPbk" 
+                class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-cyan transition-all rounded-lg px-3 py-2 text-xs md:text-sm text-zinc-200 font-mono focus:outline-none" 
+                placeholder="Заменяет PLACEHOLDER_PBK">
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-xs font-mono text-zinc-400 flex items-center gap-1">
+                Reality SID (Short ID)
+                <span class="cursor-help text-zinc-600 hover:text-zinc-400" title="Глобальный Short ID для VLESS REALITY (подставится вместо плейсхолдера)">ⓘ</span>
+              </label>
+              <input type="text" id="cfgSid" 
+                class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-cyan transition-all rounded-lg px-3 py-2 text-xs md:text-sm text-zinc-200 font-mono focus:outline-none" 
+                placeholder="Заменяет PLACEHOLDER_SID">
+            </div>
+          </div>
+
+          <!-- Extra query params for Hysteria2 / VLESS XHTTP parameters -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div class="space-y-1">
+              <label class="text-xs font-mono text-zinc-400 flex items-center gap-1">
+                📝 Hysteria2 Доп. параметры
+                <span class="cursor-help text-zinc-600 hover:text-zinc-400" title="Query параметры, которые будут принудительно добавлены к результирующей Hysteria2 ссылке. Пример: obfs=xplus&obfs-password=secret">ⓘ</span>
+              </label>
+              <input type="text" id="extraParams" 
+                class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-cyan transition-all rounded-lg px-3 py-2 text-xs text-zinc-200 font-mono focus:outline-none" 
+                placeholder="obfs=xplus&obfs-password=secret">
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div class="space-y-1">
+                <label class="text-xs font-mono text-zinc-400">XHTTP Path</label>
+                <input type="text" id="cfgXhttpPath" 
+                  class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-cyan transition-all rounded-lg px-3 py-2 text-xs text-zinc-200 font-mono focus:outline-none" 
+                  value="/xhttppath/">
+              </div>
+              <div class="space-y-1">
+                <label class="text-xs font-mono text-zinc-400">XHTTP Extra JSON</label>
+                <input type="text" id="cfgXhttpExtra" 
+                  class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-cyan transition-all rounded-lg px-3 py-2 text-xs text-zinc-200 font-mono focus:outline-none" 
+                  value='{"browser":"chrome"}'>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advanced settings toggler -->
+          <div class="pt-2">
+            <button type="button" id="advancedTrigger" onclick="toggleAdvancedSettings()" class="inline-flex items-center gap-2 text-xs font-mono font-semibold text-zinc-500 hover:text-cyan transition-colors">
+              ⚙️ Дополнительные настройки <span id="advancedArrow" class="text-[10px] transform transition-transform">▼</span>
+            </button>
+            
+            <div id="advancedContent" class="hidden mt-3 pt-3 border-t border-zinc-850/55 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Allow Insecure -->
+              <div class="flex items-center justify-between bg-zinc-950/40 p-3 border border-zinc-850 rounded-xl">
+                <div class="flex flex-col">
+                  <span class="text-xs font-semibold text-zinc-200">🔒 Allow Insecure</span>
+                  <span class="text-[10px] text-zinc-500">Разрешить самоподписанные сертификаты (insecure=1)</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="insecureToggle" class="sr-only peer">
+                  <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-400 after:border-zinc-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan peer-checked:after:bg-zinc-950"></div>
+                </label>
+              </div>
+
+              <!-- Pin SHA256 -->
+              <div class="space-y-1">
+                <label class="text-xs font-mono text-zinc-400">Pin SHA-256</label>
+                <input type="text" id="pinsha256Input" class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-cyan rounded-lg px-3 py-2 text-xs text-zinc-200 font-mono focus:outline-none" placeholder="Хэш сертификата сервера">
+              </div>
+
+              <!-- Port Hopping -->
+              <div class="space-y-1">
+                <label class="text-xs font-mono text-zinc-400">Port Hopping (hop)</label>
+                <input type="text" id="hopInput" class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-cyan rounded-lg px-3 py-2 text-xs text-zinc-200 font-mono focus:outline-none" placeholder="20000-30000 или 1234,5678">
+              </div>
+
+              <!-- MTU -->
+              <div class="space-y-1">
+                <label class="text-xs font-mono text-zinc-400">MTU</label>
+                <input type="number" id="mtuInput" class="w-full bg-zinc-950/80 border border-zinc-800 focus:border-cyan rounded-lg px-3 py-2 text-xs text-zinc-200 font-mono focus:outline-none" placeholder="По умолчанию (например, 1500)">
+              </div>
+            </div>
+          </div>
+
+          <!-- Help Info section (Hysteria2 Params details) -->
+          <div class="pt-2">
+            <button type="button" id="helpTrigger" onclick="toggleHelpSection()" class="inline-flex items-center gap-2 text-xs font-mono font-semibold text-zinc-500 hover:text-lime transition-colors">
+              💡 Подробное руководство по параметрам Hysteria2 <span id="helpArrow" class="text-[10px] transform transition-transform">▼</span>
+            </button>
+
+            <div id="helpContent" class="hidden mt-3 p-4 bg-zinc-950/50 rounded-xl border border-zinc-850 space-y-4 max-h-[350px] overflow-y-auto text-xs leading-relaxed text-zinc-400">
+              <div>
+                <h4 class="font-heading font-semibold text-lime mb-1 text-[11px] uppercase tracking-wide">🚀 Fast Open</h4>
+                <p><strong>Плюсы:</strong> Снижает задержку первого запроса (RTT), отправляя данные во время TLS рукопожатия.</p>
+                <p><strong>Минусы:</strong> Может блокироваться провайдером при плохой работе NAT.</p>
+              </div>
+              <div>
+                <h4 class="font-heading font-semibold text-lime mb-1 text-[11px] uppercase tracking-wide">🔒 Allow Insecure</h4>
+                <p>Разрешает небезопасные TLS соединения. Используйте только для самоподписанных сертификатов (повышает риск MITM-атак).</p>
+              </div>
+              <div>
+                <h4 class="font-heading font-semibold text-lime mb-1 text-[11px] uppercase tracking-wide">📌 Pin SHA-256</h4>
+                <p>Позволяет привязать отпечаток открытого ключа сертификата для повышения безопасности при использовании самоподписанных сертификатов.</p>
+              </div>
+              <div>
+                <h4 class="font-heading font-semibold text-lime mb-1 text-[11px] uppercase tracking-wide">📦 MTU</h4>
+                <p>Рекомендуется: 1500 (стандарт для оптоволокна), 1492 (PPPoE), 1350/1200 (мобильный интернет для исключения зависаний).</p>
+              </div>
+            </div>
+          </div>
+
         </div>
+      </section>
+
+      <!-- ACTION CONVERT BUTTON -->
+      <button type="button" id="btnConvert" onclick="performConversion()"
+        class="w-full py-4 bg-gradient-to-r from-lime to-cyan text-black hover:scale-[1.01] active:scale-[0.99] transition-all rounded-2xl font-heading text-sm font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(204,255,0,0.2)] hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] focus:outline-none relative overflow-hidden group">
+        <span class="relative z-10 flex items-center justify-center gap-2">
+          🚀 Сконвертировать для ZeroBlock
+        </span>
+        <div class="absolute inset-0 bg-gradient-to-r from-cyan to-lime opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      </button>
+
+      <!-- PARSED PREVIEW SECTION -->
+      <section id="previewSection" class="hidden bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
+        <h2 class="font-heading text-sm md:text-base font-semibold tracking-wider text-zinc-200 flex items-center gap-2">
+          <span class="text-lime font-bold">▍</span>Распарсенные данные
+        </h2>
         
-        <!-- Hysteria2 Parameters Help Section -->
-        <div class="help-trigger" id="helpTrigger">
-          <span>💡 Подробное руководство по параметрам Hysteria2</span>
-          <span class="help-arrow" id="helpArrow">▼</span>
+        <div class="overflow-x-auto border border-zinc-850 rounded-xl bg-zinc-950/60">
+          <table class="w-full min-w-[700px] border-collapse text-left text-xs font-mono">
+            <thead>
+              <tr class="border-b border-zinc-850 bg-zinc-900/30 text-zinc-500 uppercase tracking-wider text-[10px]">
+                <th class="py-2.5 px-4 w-10">#</th>
+                <th class="py-2.5 px-4">Схема</th>
+                <th class="py-2.5 px-4">UUID / Пароль</th>
+                <th class="py-2.5 px-4">Хост:Порт</th>
+                <th class="py-2.5 px-4">SNI</th>
+                <th class="py-2.5 px-4">PBK</th>
+                <th class="py-2.5 px-4">SID</th>
+              </tr>
+            </thead>
+            <tbody id="previewTableBody" class="divide-y divide-zinc-900 text-zinc-350">
+              <!-- Raw parse previews will be loaded here -->
+            </tbody>
+          </table>
         </div>
+      </section>
+
+      <!-- OUTPUT SECTIONS (Reality, XHTTP, Hysteria2 displayed one after another) -->
+      <div id="resultsBlock" class="hidden space-y-6">
         
-        <div class="help-content hidden" id="helpContent">
-          <!-- Fast Open -->
-          <div class="help-item">
-            <div class="help-title">🚀 Fast Open</div>
-            <div class="help-grid">
-              <div class="help-column">
-                <div class="help-badge help-badge--success">ЕСЛИ ВКЛЮЧИТЬ (Рекомендуется)</div>
-                <ul>
-                  <li><strong>Плюсы:</strong> Снижает задержку первого запроса (RTT), отправляя данные во время TLS рукопожатия. Сайты открываются быстрее.</li>
-                  <li><strong>Минусы:</strong> Может блокироваться провайдером, если на пути следования пакетов стоит старое сетевое оборудование (с кривым NAT).</li>
-                  <li><strong>⚙️ Настройка:</strong> На стороне сервера Linux необходимо включить поддержку Fast Open в ядре (выполнить команду <code>sysctl -w net.ipv4.tcp_fastopen=3</code>).</li>
-                </ul>
-              </div>
-              <div class="help-column">
-                <div class="help-badge help-badge--danger">ЕСЛИ ВЫКЛЮЧИТЬ</div>
-                <ul>
-                  <li><strong>Плюсы:</strong> Идеальная совместимость и стабильность на любых сетях.</li>
-                  <li><strong>Минусы:</strong> Каждое новое соединение будет требовать лишний сетевой круг общения (RTT) перед началом загрузки контента, что замедляет веб-серфинг.</li>
-                </ul>
-              </div>
-            </div>
+        <!-- Placeholder Warning Banner -->
+        <div id="placeholderWarningBanner" class="hidden p-4 bg-amber-950/40 border border-amber-900/50 rounded-2xl text-xs text-amber-300 space-y-1">
+          <div class="flex items-center gap-2 font-bold">
+            <span>⚠️</span> Обнаружены отсутствующие Reality параметры (pbk/sid)!
           </div>
-
-          <!-- Allow Insecure -->
-          <div class="help-item">
-            <div class="help-title">🔒 Allow Insecure</div>
-            <div class="help-grid">
-              <div class="help-column">
-                <div class="help-badge help-badge--danger">ЕСЛИ ВКЛЮЧИТЬ</div>
-                <ul>
-                  <li><strong>Плюсы:</strong> Позволяет использовать бесплатные самоподписанные TLS сертификаты. Не нужно покупать домен и привязывать его к серверу.</li>
-                  <li><strong>Минусы:</strong> Соединение уязвимо к атаке Man-in-the-Middle (MITM). Провайдер может перехватить трафик, подменив сертификат.</li>
-                </ul>
-              </div>
-              <div class="help-column">
-                <div class="help-badge help-badge--success">ЕСЛИ ВЫКЛЮЧИТЬ (Рекомендуется)</div>
-                <ul>
-                  <li><strong>Плюсы:</strong> Полная безопасность данных и надежное шифрование. Защита от перехвата и анализа трафика.</li>
-                  <li><strong>Минусы:</strong> Требует покупки домена с валидным SSL-сертификатом (Let's Encrypt), либо обязательного указания <strong>Pin SHA-256</strong>.</li>
-                  <li><strong>⚙️ Настройка:</strong> На стороне сервера Hysteria2 должен быть настроен действительный SSL-сертификат от Let's Encrypt/ZeroSSL, привязанный к домену, либо сгенерирован самоподписанный сертификат с передачей отпечатка клиенту.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pin SHA-256 -->
-          <div class="help-item">
-            <div class="help-title">📌 Pin SHA-256</div>
-            <div class="help-grid">
-              <div class="help-column">
-                <div class="help-badge help-badge--success">ЕСЛИ ЗАПОЛНИТЬ</div>
-                <ul>
-                  <li><strong>Плюсы:</strong> Позволяет безопасно использовать самоподписанный сертификат без покупки домена. Клиент проверяет отпечаток ключа и доверяет только вашему серверу, защищая от MITM.</li>
-                  <li><strong>Минусы:</strong> При перевыпуске сертификата отпечаток изменится, и конфигурацию придется сгенерировать заново.</li>
-                  <li><strong>⚙️ Настройка:</strong> Требуется извлечь SHA-256 хэш публичного ключа вашего сертификата на сервере (например, с помощью команды: <code>openssl x509 -noout -fingerprint -sha256 -inform pem -in cert.pem</code>) и вставить полученную строку в это поле.</li>
-                </ul>
-              </div>
-              <div class="help-column">
-                <div class="help-badge help-badge--danger">ЕСЛИ ОСТАВИТЬ ПУСТЫМ</div>
-                <ul>
-                  <li><strong>Плюсы:</strong> Упрощает перевыпуск ключей на сервере без необходимости обновлять ссылки на клиентах.</li>
-                  <li><strong>Минусы:</strong> Требует наличия валидного доменного сертификата (Let's Encrypt), иначе придется включить небезопасный <em>Allow Insecure</em>.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- Port Hopping -->
-          <div class="help-item">
-            <div class="help-title">🔀 Port Hopping (hop)</div>
-            <div class="help-grid">
-              <div class="help-column">
-                <div class="help-badge help-badge--success">ЕСЛИ ЗАПОЛНИТЬ</div>
-                <ul>
-                  <li><strong>Плюсы:</strong> Помогает обходить ограничения провайдеров на лимит UDP соединений и блокировки/замедления по портам. Сервер слушает диапазон портов.</li>
-                  <li><strong>Минусы:</strong> Требует настройки NAT/IPTables правил перенаправления портов на самом сервере Hysteria2.</li>
-                  <li><strong>⚙️ Настройка:</strong> На сервере требуется настроить перенаправление UDP портов из диапазона (например, 20000-30000) на основной порт Hysteria2 (например, 443). Пример команды iptables: <code>iptables -t nat -A PREROUTING -p udp --dport 20000:30000 -j REDIRECT --to-port 443</code>.</li>
-                </ul>
-              </div>
-              <div class="help-column">
-                <div class="help-badge help-badge--danger">ЕСЛИ ОСТАВИТЬ ПУСТЫМ</div>
-                <ul>
-                  <li><strong>Плюсы:</strong> Нет необходимости настраивать дополнительные правила фаервола на стороне сервера.</li>
-                  <li><strong>Минусы:</strong> Высокий риск UDP-rate-limiting от провайдера при просмотре видео или скачивании больших файлов на один порт.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- MTU -->
-          <div class="help-item">
-            <div class="help-title">📦 MTU</div>
-            <div class="help-grid">
-              <div class="help-column">
-                <div class="help-badge help-badge--success">ЕСЛИ НАСТРОИТЬ</div>
-                <ul>
-                  <li><strong>Плюсы:</strong> Предотвращает фрагментацию UDP пакетов. <strong>Для качественного домашнего проводного интернета (оптоволокно/кабель) лучше всего выставлять 1500</strong> (или 1492, если используется PPPoE соединение). <strong>Для мобильного интернета (3G/LTE) оптимально выставить 1350 или 1200</strong> для устранения зависаний.</li>
-                  <li><strong>Минусы:</strong> При слишком низком MTU на быстром домашнем интернете скорость может незначительно снизиться из-за увеличения количества мелких пакетов и накладных расходов.</li>
-                </ul>
-              </div>
-              <div class="help-column">
-                <div class="help-badge help-badge--danger">ЕСЛИ ОСТАВИТЬ ПО УМОЛЧАНИЮ</div>
-                <ul>
-                  <li><strong>Плюсы:</strong> Применяется стандартное значение клиента (максимальная скорость на проводном домашнем интернете).</li>
-                  <li><strong>Минусы:</strong> Мобильные провайдеры с низким MTU будут дропать фрагментированные UDP-пакеты, что вызовет потери и зависания.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+          <p class="text-zinc-400 font-sans leading-relaxed">
+            Поскольку исходные ссылки не имели специфических параметров Reality (например, были Hysteria2 ссылками), пустые плейсхолдеры были заполнены значениями <code class="text-amber-200">PLACEHOLDER_PBK</code> и <code class="text-amber-200">PLACEHOLDER_SID</code>. Введите их вручную ниже в коде или укажите в глобальных настройках выше.
+          </p>
         </div>
-      </div>
-    </section>
 
-    <!-- RESULT -->
-    <section id="resultSection" class="hidden">
-      <div class="section-header">
-        <h2 class="section-title">Результат</h2>
+        <!-- 1. VLESS REALITY SECTION -->
+        <section class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+            <h3 class="font-heading text-xs md:text-sm font-semibold tracking-wider text-white flex items-center gap-2">
+              <span class="text-lime font-bold">▍</span>1. VLESS REALITY (TCP + Vision)
+            </h3>
+            <button onclick="copyAllFromProtocol('reality')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950 hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-750 text-cyan hover:text-cyan-400 font-mono text-[11px] rounded-lg transition-all">
+              📑 Скопировать все ссылки (<span id="realityCount">0</span>)
+            </button>
+          </div>
+          
+          <div class="overflow-x-auto border border-zinc-850 rounded-xl bg-zinc-950/60">
+            <table class="w-full min-w-[600px] border-collapse text-left text-xs font-mono">
+              <thead>
+                <tr class="border-b border-zinc-850 bg-zinc-900/30 text-zinc-500 uppercase tracking-wider text-[10px]">
+                  <th class="py-2.5 px-4 w-12">#</th>
+                  <th class="py-2.5 px-4 w-1/4">Имя прокси (LuCI)</th>
+                  <th class="py-2.5 px-4">Target Ссылка для ZeroBlock</th>
+                  <th class="py-2.5 px-4 w-28 text-center">Действия</th>
+                </tr>
+              </thead>
+              <tbody id="tableBodyReality" class="divide-y divide-zinc-900"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 2. VLESS XHTTP SECTION -->
+        <section class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+            <h3 class="font-heading text-xs md:text-sm font-semibold tracking-wider text-white flex items-center gap-2">
+              <span class="text-lime font-bold">▍</span>2. VLESS XHTTP (xhttp транспорт)
+            </h3>
+            <button onclick="copyAllFromProtocol('xhttp')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950 hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-750 text-cyan hover:text-cyan-400 font-mono text-[11px] rounded-lg transition-all">
+              📑 Скопировать все ссылки (<span id="xhttpCount">0</span>)
+            </button>
+          </div>
+          
+          <div class="overflow-x-auto border border-zinc-850 rounded-xl bg-zinc-950/60">
+            <table class="w-full min-w-[600px] border-collapse text-left text-xs font-mono">
+              <thead>
+                <tr class="border-b border-zinc-850 bg-zinc-900/30 text-zinc-500 uppercase tracking-wider text-[10px]">
+                  <th class="py-2.5 px-4 w-12">#</th>
+                  <th class="py-2.5 px-4 w-1/4">Имя прокси (LuCI)</th>
+                  <th class="py-2.5 px-4">Target Ссылка для ZeroBlock</th>
+                  <th class="py-2.5 px-4 w-28 text-center">Действия</th>
+                </tr>
+              </thead>
+              <tbody id="tableBodyXhttp" class="divide-y divide-zinc-900"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 3. HYSTERIA2 SECTION -->
+        <section class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+            <h3 class="font-heading text-xs md:text-sm font-semibold tracking-wider text-white flex items-center gap-2">
+              <span class="text-lime font-bold">▍</span>3. Hysteria2 (QUIC)
+            </h3>
+            <button onclick="copyAllFromProtocol('hysteria')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950 hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-750 text-cyan hover:text-cyan-400 font-mono text-[11px] rounded-lg transition-all">
+              📑 Скопировать все ссылки (<span id="hysteriaCount">0</span>)
+            </button>
+          </div>
+          
+          <div class="overflow-x-auto border border-zinc-850 rounded-xl bg-zinc-950/60">
+            <table class="w-full min-w-[600px] border-collapse text-left text-xs font-mono">
+              <thead>
+                <tr class="border-b border-zinc-850 bg-zinc-900/30 text-zinc-500 uppercase tracking-wider text-[10px]">
+                  <th class="py-2.5 px-4 w-12">#</th>
+                  <th class="py-2.5 px-4 w-1/4">Имя прокси (LuCI)</th>
+                  <th class="py-2.5 px-4">Target Ссылка для ZeroBlock</th>
+                  <th class="py-2.5 px-4 w-28 text-center">Действия</th>
+                </tr>
+              </thead>
+              <tbody id="tableBodyHysteria" class="divide-y divide-zinc-900"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 4. SING-BOX JSON CONFIG EXPORT -->
+        <section class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+            <h3 class="font-heading text-xs md:text-sm font-semibold tracking-wider text-white flex items-center gap-2">
+              <span class="text-lime font-bold">▍</span>4. Конфигурация Outbounds (sing-box JSON)
+            </h3>
+            <button onclick="copySingboxJson()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950 hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-750 text-cyan hover:text-cyan-400 font-mono text-[11px] rounded-lg transition-all">
+              📑 Скопировать JSON
+            </button>
+          </div>
+          <div class="relative bg-zinc-950 p-4 border border-zinc-900 rounded-xl max-h-[300px] overflow-y-auto">
+            <pre class="text-[11px] font-mono text-zinc-300 whitespace-pre-wrap select-all" id="singboxJsonCode">// Здесь будет сгенерирован JSON outbounds</pre>
+          </div>
+        </section>
+
+        <!-- 5. OPENWRT UCI CLI IMPORT SCRIPT -->
+        <section class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+            <h3 class="font-heading text-xs md:text-sm font-semibold tracking-wider text-white flex items-center gap-2">
+              <span class="text-lime font-bold">▍</span>5. Скрипт импорта для OpenWrt (UCI CLI)
+            </h3>
+            <button onclick="copyUciScript()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950 hover:bg-zinc-900 border border-zinc-850 hover:border-zinc-750 text-cyan hover:text-cyan-400 font-mono text-[11px] rounded-lg transition-all">
+              📑 Скопировать Скрипт
+            </button>
+          </div>
+          <div class="relative bg-zinc-950 p-4 border border-zinc-900 rounded-xl max-h-[300px] overflow-y-auto">
+            <pre class="text-[11px] font-mono text-zinc-300 whitespace-pre-wrap select-all" id="uciScriptCode"># Здесь будет сгенерирован UCI bash-скрипт</pre>
+          </div>
+        </section>
+
       </div>
-      <div class="result-panel">
-        <code class="result-link" id="resultLink">hysteria2://...</code>
-        <div class="result-actions">
-          <button id="btnCopy" class="btn-copy">📋 Копировать</button>
-          <span id="copyFeedback" class="copy-feedback hidden">✅ Скопировано!</span>
+
+      <!-- HISTORY PANEL -->
+      <section class="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+          <h2 class="font-heading text-sm md:text-base font-semibold tracking-wider text-zinc-200 flex items-center gap-2">
+            <span class="text-zinc-500 font-bold">▍</span>История конверсий
+          </h2>
+          <button id="btnClearHistory" onclick="clearHistory()" class="text-[10px] font-mono text-zinc-500 hover:text-red-400 transition-all">
+            🗑️ Очистить историю
+          </button>
         </div>
-      </div>
-    </section>
 
-    <!-- HISTORY -->
-    <section id="historySection">
-      <div class="section-header">
-        <h2 class="section-title">История конверсий</h2>
-      </div>
-      <div class="card">
-        <div id="historyEmpty" class="history-empty">
+        <div id="historyEmpty" class="text-center py-6 text-zinc-500 text-xs md:text-sm font-mono flex flex-col items-center gap-2">
           <span>📭</span>
           <span>История пуста</span>
-          <span style="font-size:clamp(0.75rem,1.5vw,0.875rem);color:var(--text-muted)">Конвертируйте первую ссылку</span>
         </div>
-        <div id="historyList" class="history-list hidden"></div>
-        <div id="historyActions" class="history-actions hidden">
-          <button id="btnClearHistory" class="btn-ghost">🗑️ Очистить историю</button>
+
+        <div id="historyList" class="hidden divide-y divide-zinc-900 text-xs md:text-sm">
+          <!-- History rows -->
         </div>
-      </div>
-    </section>
+      </section>
+
+    </main>
 
     <!-- FOOTER -->
-    <footer style="text-align:center;padding:var(--space-8) 0 var(--space-4);color:var(--text-muted);font-size:.75rem;font-family:var(--font-mono)">
-      <span style="color:var(--neon-green);">$</span> vless-converter v2.0
+    <footer class="text-center mt-12 py-6 border-t border-zinc-900/60 font-mono text-[10px] text-zinc-600 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <span>⚡ ZeroBlock Link Converter v3.5</span>
+      <span>Специально для RouteRich / OpenWrt</span>
     </footer>
   </div>
-</div>
 
-<!-- ===== NOTIFICATION CONTAINER ===== -->
-<div id="notificationContainer" style="position:fixed;top:var(--space-5);left:50%;transform:translateX(-50%);z-index:1000;display:flex;flex-direction:column;gap:var(--space-2);pointer-events:none"></div>
+  <!-- QR CODE MODAL CONTAINER -->
+  <div id="qrModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeQrModal()"></div>
+    <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl relative z-10 max-w-xs w-full text-center space-y-4 animate-[fadeIn_0.2s_ease-out]">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+        <span class="text-xs font-heading font-semibold text-zinc-300">📱 QR-код ссылки</span>
+        <button onclick="closeQrModal()" class="text-zinc-500 hover:text-white font-bold text-sm leading-none">×</button>
+      </div>
+      <div class="flex justify-center p-3 bg-white rounded-xl mx-auto" id="qrcodeCanvas"></div>
+      <p class="text-[10px] text-zinc-400 font-mono break-all select-all px-1 max-h-16 overflow-y-auto" id="qrLinkText"></p>
+      <button onclick="closeQrModal()" class="w-full py-2 bg-zinc-800 hover:bg-zinc-750 border border-zinc-750 rounded-lg text-xs font-mono text-zinc-300 transition-colors">Закрыть</button>
+    </div>
+  </div>
 
-<script>
-(function(){
-'use strict';
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-/* ============ DOM REFS ============ */
-const $ = id => document.getElementById(id);
-const inputLink = $('inputLink');
-const inputError = $('inputError');
-const btnConvert = $('btnConvert');
-const previewSection = $('previewSection');
-const resultSection = $('resultSection');
-const resultLink = $('resultLink');
-const btnCopy = $('btnCopy');
-const copyFeedback = $('copyFeedback');
-const historyList = $('historyList');
-const historyEmpty = $('historyEmpty');
-const historyActions = $('historyActions');
-const btnClearHistory = $('btnClearHistory');
-const speedRange = $('speedRange');
-const speedValue = $('speedValue');
-const fastOpenToggle = $('fastOpenToggle');
-const sniInput = $('sniInput');
-const extraParams = $('extraParams');
+  <!-- ===== JS LOGIC ===== -->
+  <script>
+    (function() {
+      'use strict';
 
-// Advanced Settings refs
-const insecureToggle = $('insecureToggle');
-const pinsha256Input = $('pinsha256Input');
-const hopInput = $('hopInput');
-const mtuInput = $('mtuInput');
-const advancedTrigger = $('advancedTrigger');
-const advancedArrow = $('advancedArrow');
-const advancedContent = $('advancedContent');
-const helpTrigger = $('helpTrigger');
-const helpArrow = $('helpArrow');
-const helpContent = $('helpContent');
+      // --- DOM REFS ---
+      const $ = id => document.getElementById(id);
+      
+      const btnModeSingle = $('btnModeSingle');
+      const btnModeBulk = $('btnModeBulk');
+      const singleInputsContainer = $('singleInputsContainer');
+      const singleInputsList = $('singleInputsList');
+      const bulkInputContainer = $('bulkInputContainer');
+      const bulkTextarea = $('bulkTextarea');
+      const validationErrorBlock = $('validationErrorBlock');
+      const validationErrorText = $('validationErrorText');
+      
+      const speedRange = $('speedRange');
+      const speedValue = $('speedValue');
+      const fastOpenToggle = $('fastOpenToggle');
+      const sniInput = $('sniInput');
+      const extraParams = $('extraParams');
+      const cfgXhttpPath = $('cfgXhttpPath');
+      const cfgXhttpExtra = $('cfgXhttpExtra');
+      const insecureToggle = $('insecureToggle');
+      const pinsha256Input = $('pinsha256Input');
+      const hopInput = $('hopInput');
+      const mtuInput = $('mtuInput');
+      
+      const advancedChevron = $('advancedChevron');
+      const advancedContent = $('advancedContent');
+      const helpChevron = $('helpArrow');
+      const helpContent = $('helpContent');
+      
+      const cfgPbk = $('cfgPbk');
+      const cfgSid = $('cfgSid');
+      
+      const previewSection = $('previewSection');
+      const previewTableBody = $('previewTableBody');
+      
+      const resultsBlock = $('resultsBlock');
+      const placeholderWarningBanner = $('placeholderWarningBanner');
+      
+      const tableBodyReality = $('tableBodyReality');
+      const tableBodyXhttp = $('tableBodyXhttp');
+      const tableBodyHysteria = $('tableBodyHysteria');
+      
+      const realityCount = $('realityCount');
+      const xhttpCount = $('xhttpCount');
+      const hysteriaCount = $('hysteriaCount');
+      
+      const singboxJsonCode = $('singboxJsonCode');
+      const uciScriptCode = $('uciScriptCode');
+      
+      const historyEmpty = $('historyEmpty');
+      const historyList = $('historyList');
 
-const previewFields = {
-  uuid: $('pvUuid'),
-  host: $('pvHost'),
-  port: $('pvPort'),
-  type: $('pvType'),
-  sni: $('pvSni'),
-  encryption: $('pvEncryption'),
-  flow: $('pvFlow'),
-  fp: $('pvFp'),
-  pbk: $('pvPbk'),
-  sid: $('pvSid'),
-  spx: $('pvSpx')
-};
+      // --- STORAGE KEYS ---
+      const STORAGE_KEY_SETTINGS = 'zb_converter_settings_v3_5';
+      const STORAGE_KEY_HISTORY = 'zb_converter_history_v3_5';
+      const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      
+      let inputMode = 'single';
+      let conversionResults = [];
+      let historyItems = [];
 
-/* ============ CONSTANTS ============ */
-const HISTORY_KEY = 'vh_history';
-const SETTINGS_KEY = 'vh_settings';
-const SNI_KEY = 'vh_last_sni';
-const MAX_HISTORY = 5;
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-/* ============ STORAGE ============ */
-function storageGet(key, def) {
-  try {
-    const v = localStorage.getItem(key);
-    return v ? JSON.parse(v) : def;
-  } catch { return def; }
-}
-function storageSet(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
-
-/* ============ PARSER ============ */
-function parseVlessXHttp(link) {
-  if (!link || typeof link !== 'string') return { error: 'Вставьте VLESS или XHTTP ссылку' };
-
-  const trimmed = link.trim();
-  if (!trimmed) return { error: 'Вставьте VLESS или XHTTP ссылку' };
-
-  const schemeMatch = trimmed.match(/^(vless|xhttp):\/\//i);
-  if (!schemeMatch) return { error: 'Неверный формат: отсутствует схема (vless:// или xhttp://)' };
-
-  const scheme = schemeMatch[1].toLowerCase();
-
-  // Normalize for URL parser
-  let normalized;
-  try {
-    normalized = trimmed.replace(/^(vless|xhttp):\/\//i, 'https://');
-  } catch { return { error: 'Ошибка обработки ссылки' }; }
-
-  let url;
-  try {
-    url = new URL(normalized);
-  } catch {
-    return { error: 'Неверный формат: не удалось распарсить URL' };
-  }
-
-  const uuid = decodeURIComponent(url.username);
-  if (!uuid || !UUID_RE.test(uuid)) return { error: 'Неверный UUID в ссылке' };
-
-  const host = url.hostname;
-  if (!host) return { error: 'Не указан хост' };
-
-  const port = url.port ? parseInt(url.port, 10) : 443;
-  if (isNaN(port) || port < 1 || port > 65535) return { error: 'Неверный порт' };
-
-  const sp = url.searchParams;
-  const rawQuery = {};
-  for (const [k, v] of sp) { rawQuery[k] = v; }
-
-  const parsed = {
-    uuid,
-    host,
-    port,
-    type: scheme === 'xhttp' ? 'xhttp' : (rawQuery.type || 'vless'),
-    encryption: sp.get('encryption') || '',
-    sni: sp.get('sni') || '',
-    fp: sp.get('fp') || '',
-    pbk: sp.get('pbk') || '',
-    sid: sp.get('sid') || '',
-    spx: sp.get('spx') || '',
-    flow: sp.get('flow') || '',
-    security: sp.get('security') || '',
-    rawQuery
-  };
-
-  return { parsed };
-}
-
-/* ============ GENERATOR ============ */
-function generateHysteria2Uri(parsed, settings) {
-  const params = new URLSearchParams();
-
-  params.set('insecure', settings.insecure ? '1' : '0');
-  params.set('alpn', 'h3');
-
-  const sni = (settings.sni || '').trim() || parsed.sni || parsed.host;
-  if (sni) params.set('sni', sni);
-
-  const speed = Math.max(50, Math.min(2000, settings.speed || 500));
-  params.set('down', String(speed));
-  params.set('up', String(speed));
-
-  params.set('fastopen', settings.fastOpen ? '1' : '0');
-
-  // Pin SHA-256
-  if (settings.pinsha256 && settings.pinsha256.trim()) {
-    params.set('pinsha256', settings.pinsha256.trim());
-  }
-
-  // Port Hopping
-  if (settings.hop && settings.hop.trim()) {
-    params.set('hop', settings.hop.trim());
-  }
-
-  // MTU
-  if (settings.mtu && settings.mtu.trim()) {
-    params.set('mtu', settings.mtu.trim());
-  }
-
-  // Custom extra params
-  if (settings.extraParams && settings.extraParams.trim()) {
-    try {
-      const custom = new URLSearchParams(settings.extraParams.trim());
-      for (const [k, v] of custom) {
-        params.set(k, v);
-      }
-    } catch {}
-  }
-
-  return 'hysteria2://' + parsed.uuid + '@' + parsed.host + ':' + parsed.port + '?' + params.toString();
-}
-
-/* ============ UI STATE ============ */
-let lastParsed = null;
-let isSniManual = false;
-
-/* ============ UI RENDER ============ */
-function showError(msg) {
-  inputLink.classList.add('error');
-  inputError.textContent = msg;
-  inputError.classList.remove('hidden');
-  btnConvert.disabled = true;
-}
-
-function clearError() {
-  inputLink.classList.remove('error');
-  inputError.classList.add('hidden');
-}
-
-function populatePreview(parsed) {
-  const p = parsed;
-  previewFields.uuid.textContent = p.uuid;
-  previewFields.host.textContent = p.host;
-  previewFields.port.textContent = String(p.port);
-  previewFields.type.textContent = p.type;
-  previewFields.sni.textContent = p.sni || '—';
-  previewFields.encryption.textContent = p.encryption || '—';
-  previewFields.flow.textContent = p.flow || '—';
-  previewFields.fp.textContent = p.fp || '—';
-  previewFields.pbk.textContent = p.pbk || '—';
-  previewFields.sid.textContent = p.sid || '—';
-  previewFields.spx.textContent = p.spx || '—';
-  previewSection.classList.remove('hidden');
-  previewSection.classList.add('fade-enter');
-}
-
-function showResult(href) {
-  resultLink.textContent = href;
-  resultSection.classList.remove('hidden');
-  resultSection.classList.add('fade-enter');
-}
-
-function showNotification(msg, isError) {
-  const container = $('notificationContainer');
-  const el = document.createElement('div');
-  el.textContent = msg;
-  el.style.cssText = 'padding:12px 20px;background:rgba(15,15,25,0.75);backdrop-filter:blur(12px);border:1px solid ' + (isError ? '#ff3355' : '#00D1FF') + ';border-radius:12px;color:' + (isError ? '#ff3355' : '#00D1FF') + ';font-family:\'JetBrains Mono\',monospace;font-size:clamp(0.75rem,1.5vw,0.875rem);box-shadow:0 0 12px ' + (isError ? 'rgba(255,51,85,0.3)' : 'rgba(0,255,65,0.4)') + ';animation:fadeSlideIn 250ms ease-out;pointer-events:auto;text-align:center';
-  container.appendChild(el);
-  setTimeout(() => {
-    el.style.opacity = '0';
-    el.style.transition = 'opacity 200ms';
-    setTimeout(() => el.remove(), 200);
-  }, 2500);
-}
-
-/* ============ HISTORY ============ */
-function loadHistory() {
-  return storageGet(HISTORY_KEY, []);
-}
-
-function saveHistoryEntry(entry) {
-  let history = loadHistory();
-  history.unshift(entry);
-  if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
-  storageSet(HISTORY_KEY, history);
-}
-
-function clearHistory() {
-  storageSet(HISTORY_KEY, []);
-  renderHistory();
-  showNotification('🗑️ История очищена', false);
-}
-
-function formatTimeAgo(ts) {
-  const diff = Date.now() - ts;
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'только что';
-  if (mins < 60) return mins + ' мин назад';
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return hrs + ' ч назад';
-  const days = Math.floor(hrs / 24);
-  return days + ' дн назад';
-}
-
-function truncateLink(link, maxLen) {
-  if (link.length <= maxLen) return link;
-  return link.substring(0, maxLen - 3) + '...';
-}
-
-function renderHistory() {
-  const history = loadHistory();
-  const hasItems = history.length > 0;
-
-  if (hasItems) {
-    historyEmpty.classList.add('hidden');
-    historyList.classList.remove('hidden');
-    historyActions.classList.remove('hidden');
-    historyList.innerHTML = '';
-    history.forEach(function(entry) {
-      const item = document.createElement('div');
-      item.className = 'history-item';
-      item.setAttribute('data-id', entry.id || '');
-
-      const timeSpan = document.createElement('span');
-      timeSpan.className = 'history-time';
-      timeSpan.textContent = '⏺ ' + formatTimeAgo(entry.createdAt || entry.timestamp || 0);
-
-      const iconsSpan = document.createElement('span');
-      iconsSpan.className = 'history-icons';
-
-      const linkPreview = document.createElement('span');
-      linkPreview.className = 'history-link-preview';
-
-      const arrow = document.createElement('span');
-      arrow.className = 'history-arrow';
-      arrow.textContent = '→';
-
-      if (entry.parsed && entry.parsed.type) {
-        iconsSpan.textContent = entry.parsed.type.toUpperCase();
-        linkPreview.textContent = truncateLink(entry.parsed.uuid + '@' + entry.parsed.host + ':' + entry.parsed.port, 50);
-      } else {
-        iconsSpan.textContent = 'VLESS';
-        linkPreview.textContent = truncateLink(entry.inputLink || entry.input || '', 50);
-      }
-
-      item.appendChild(timeSpan);
-      item.appendChild(iconsSpan);
-      item.appendChild(arrow);
-      item.appendChild(linkPreview);
-
-      // Click to restore
-      item.addEventListener('click', function() {
-        const output = entry.outputLink || entry.output || '';
-        if (output) {
-          const inp = entry.inputLink || entry.input || '';
-          if (inp) {
-            inputLink.value = inp;
-            if (entry.settings) {
-              speedRange.value = entry.settings.speed || 500;
-              speedValue.textContent = speedRange.value;
-              fastOpenToggle.checked = entry.settings.fastOpen !== false;
-              sniInput.value = entry.settings.sni || '';
-              extraParams.value = entry.settings.extraParams || '';
-              isSniManual = (entry.settings.sni && entry.settings.sni.trim() !== '');
-              
-              // Advanced settings
-              insecureToggle.checked = entry.settings.insecure !== false;
-              pinsha256Input.value = entry.settings.pinsha256 || '';
-              hopInput.value = entry.settings.hop || '';
-              mtuInput.value = entry.settings.mtu || '';
-            }
-            triggerParse();
-          }
-          showResult(output);
-          resultSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // --- TOAST NOTIFICATIONS ---
+      function showToast(message, type = 'success') {
+        const container = $('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `p-3 rounded-xl border text-xs font-mono shadow-xl flex items-center gap-2 transform translate-y-2 opacity-0 transition-all duration-350 pointer-events-auto cursor-pointer`;
+        
+        if (type === 'success') {
+          toast.className += ' bg-zinc-900 border-lime/30 text-lime shadow-lime/5';
+          toast.innerHTML = `<span>⚡</span> <span>${message}</span>`;
+        } else if (type === 'error') {
+          toast.className += ' bg-zinc-900 border-red-900/50 text-red-400 shadow-red-950/20';
+          toast.innerHTML = `<span>⚠️</span> <span>${message}</span>`;
         }
+        
+        container.appendChild(toast);
+        toast.offsetHeight; // Reflow
+        toast.classList.remove('translate-y-2', 'opacity-0');
+        
+        const close = () => {
+          toast.classList.add('translate-y-2', 'opacity-0');
+          setTimeout(() => toast.remove(), 350);
+        };
+        toast.addEventListener('click', close);
+        setTimeout(close, 3500);
+      }
+
+      // --- CHECK CLOUDFLARE HOST (UDP COMPATIBILITY CHECK) ---
+      function isCloudflareHost(host) {
+        if (!host) return false;
+        const h = host.toLowerCase();
+        return h.endsWith('.cloudflare.com') || h.endsWith('.workers.dev') || h === 'workers.dev';
+      }
+
+      // --- CLEAN HASH NAME (LuCI COMPATIBLE) ---
+      function cleanNameForZeroBlock(name) {
+        if (!name) return 'Proxy';
+        let decoded = name;
+        try {
+          decoded = decodeURIComponent(name);
+        } catch (e) {}
+
+        const countryShortcuts = {
+          'германия': 'DE',
+          'нидерланды': 'NL',
+          'франция': 'FR',
+          'сша': 'US',
+          'финляндия': 'FI',
+          'великобритания': 'UK',
+          'швеция': 'SE',
+          'польша': 'PL',
+          'казахстан': 'KZ',
+          'россия': 'RU',
+          'турция': 'TR',
+          'сингапур': 'SG',
+          'япония': 'JP',
+          'латвия': 'LV',
+          'литва': 'LT',
+          'эстония': 'EE',
+          'украина': 'UA'
+        };
+
+        let replaced = decoded;
+        for (const [key, value] of Object.entries(countryShortcuts)) {
+          const regex = new RegExp(key, 'gi');
+          replaced = replaced.replace(regex, value);
+        }
+
+        const cyrillicToLatinMap = {
+          'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z',
+          'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r',
+          'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch',
+          'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
+          'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'Yo', 'Ж': 'Zh', 'З': 'Z',
+          'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R',
+          'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch',
+          'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya'
+        };
+
+        let transliterated = '';
+        for (let i = 0; i < replaced.length; i++) {
+          const char = replaced[i];
+          transliterated += cyrillicToLatinMap[char] !== undefined ? cyrillicToLatinMap[char] : char;
+        }
+
+        // Replace invalid chars with hyphen (space, comma, quote, backslash, hash, brackets, parens, braces)
+        let cleaned = transliterated.replace(/[\s,\'\"\\#\[\]\(\)\{\}]+/g, '-');
+        
+        // Remove emoji & any non-ascii characters for OpenWrt LuCI compat
+        cleaned = cleaned.replace(/[^a-zA-Z0-9\-_.]/g, '');
+        
+        // Cleanup delimiters
+        cleaned = cleaned.replace(/[-_]{2,}/g, '-');
+        cleaned = cleaned.replace(/^[-_]+|[-_]+$/g, '');
+
+        return cleaned || 'Proxy';
+      }
+
+      // --- PARSE VPN LINK ---
+      function parseVpnLink(link) {
+        if (!link || typeof link !== 'string') return { error: 'Ссылка пуста' };
+        const trimmed = link.trim();
+        if (!trimmed) return { error: 'Ссылка пуста' };
+
+        const match = trimmed.match(/^(vless|hysteria2):\/\//i);
+        if (!match) return { error: 'Неподдерживаемая схема. Требуется vless:// или hysteria2://' };
+
+        const protocol = match[1].toLowerCase();
+
+        let name = '';
+        let urlPart = trimmed;
+        const hashIdx = trimmed.indexOf('#');
+        if (hashIdx !== -1) {
+          name = trimmed.substring(hashIdx + 1);
+          urlPart = trimmed.substring(0, hashIdx);
+        }
+
+        const normalized = urlPart.replace(/^(vless|hysteria2):\/\//i, 'https://');
+        let url;
+        try {
+          url = new URL(normalized);
+        } catch (e) {
+          return { error: 'Не удалось распарсить структуру URL' };
+        }
+
+        const credentials = decodeURIComponent(url.username);
+        if (!credentials) {
+          return { error: `Отсутствует ${protocol === 'vless' ? 'UUID' : 'пароль'}` };
+        }
+
+        const host = url.hostname;
+        if (!host) {
+          return { error: 'Отсутствует хост/IP адрес' };
+        }
+
+        const port = url.port ? parseInt(url.port, 10) : (protocol === 'vless' ? 443 : 8443);
+        if (isNaN(port) || port < 1 || port > 65535) {
+          return { error: 'Неверный порт' };
+        }
+
+        const query = {};
+        for (const [k, v] of url.searchParams) {
+          query[k] = v;
+        }
+
+        return {
+          parsed: {
+            protocol,
+            credentials,
+            host,
+            port,
+            sni: query.sni || query.host || host,
+            pbk: query.pbk || '',
+            sid: query.sid || '',
+            name,
+            cleanedName: cleanNameForZeroBlock(name),
+            rawQuery: query
+          }
+        };
+      }
+
+      // --- GENERATE ZEROBLOCK TARGET LINKS ---
+      function generateZeroBlockLinks(parsed, config) {
+        const name = parsed.cleanedName;
+        const host = parsed.host;
+        const port = parsed.port;
+        const sni = config.sni || parsed.sni || host;
+        const cred = parsed.credentials;
+
+        // 1. VLESS REALITY
+        const pbk = config.pbk || parsed.pbk || 'PLACEHOLDER_PBK';
+        const sid = config.sid || parsed.sid || 'PLACEHOLDER_SID';
+        const reality = `vless://${cred}@${host}:${port}?type=tcp&security=reality&flow=xtls-rprx-vision&fp=chrome&sni=${sni}&pbk=${pbk}&sid=${sid}#${name}`;
+
+        // 2. VLESS XHTTP
+        const xhttpPath = encodeURIComponent(config.xhttpPath || '/xhttppath/');
+        let extraJsonStr = '{}';
+        try {
+          if (config.xhttpExtra) {
+            JSON.parse(config.xhttpExtra);
+            extraJsonStr = config.xhttpExtra;
+          }
+        } catch (e) {}
+        const xhttpExtra = encodeURIComponent(extraJsonStr);
+        const xhttp = `vless://${cred}@${host}:${port}?type=xhttp&path=${xhttpPath}&security=tls&fp=random&alpn=h2%2Chttp%2F1.1&host=${host}&mode=auto&extra=${xhttpExtra}#${name}`;
+
+        // 3. Hysteria2
+        const params = new URLSearchParams();
+        params.set('sni', sni);
+        params.set('insecure', config.insecure ? '1' : '0');
+        params.set('alpn', 'h3');
+        params.set('down', String(config.speed || 500));
+        params.set('up', String(config.speed || 500));
+        params.set('fastopen', config.fastOpen ? '1' : '0');
+        
+        if (config.pinsha256) params.set('pinsha256', config.pinsha256);
+        if (config.hop) params.set('hop', config.hop);
+        if (config.mtu) params.set('mtu', config.mtu);
+        
+        // Append extra parameters from input
+        if (config.extraParams) {
+          try {
+            const extraQuery = new URLSearchParams(config.extraParams);
+            for (const [k, v] of extraQuery) {
+              params.set(k, v);
+            }
+          } catch (e) {}
+        }
+        
+        const hysteria = `hysteria2://${cred}@${host}:${port}?${params.toString()}#${name}`;
+
+        return {
+          reality,
+          xhttp,
+          hysteria,
+          hasPlaceholders: pbk === 'PLACEHOLDER_PBK' || sid === 'PLACEHOLDER_SID'
+        };
+      }
+
+      // --- UI INPUT MODE ---
+      window.switchInputMode = function(mode) {
+        inputMode = mode;
+        if (mode === 'single') {
+          btnModeSingle.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-zinc-800 text-white";
+          btnModeBulk.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-zinc-400 hover:text-zinc-200";
+          singleInputsContainer.classList.remove('hidden');
+          bulkInputContainer.classList.add('hidden');
+        } else {
+          btnModeSingle.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-zinc-400 hover:text-zinc-200";
+          btnModeBulk.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-zinc-800 text-white";
+          singleInputsContainer.classList.add('hidden');
+          bulkInputContainer.classList.remove('hidden');
+        }
+        validationErrorBlock.classList.add('hidden');
+      };
+
+      // --- ADVANCED & HELP TOGGLERS ---
+      window.toggleAdvancedSettings = function() {
+        const isHidden = advancedContent.classList.toggle('hidden');
+        advancedChevron.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(90deg)';
+      };
+
+      window.toggleHelpSection = function() {
+        const isHidden = helpContent.classList.toggle('hidden');
+        helpChevron.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(90deg)';
+      };
+
+      window.updateSpeedValue = function(val) {
+        speedValue.textContent = val;
+        saveSettingsOnInput();
+      };
+
+      // --- DYNAMIC INPUT CONTROL ---
+      let nextId = 1;
+      window.addSingleInput = function(value = '') {
+        const id = nextId++;
+        const row = document.createElement('div');
+        row.id = `inputRow-${id}`;
+        row.className = 'flex items-center gap-2 group animate-[fadeIn_0.15s_ease-out]';
+        
+        row.innerHTML = `
+          <span class="text-xs font-mono text-zinc-600 w-5 text-right font-bold select-none group-hover:text-zinc-400 transition-colors">${singleInputsList.children.length + 1}</span>
+          <input type="text" 
+            class="vpn-input flex-1 bg-zinc-950/80 border border-zinc-800 focus:border-lime hover:border-zinc-700 transition-all rounded-xl px-4 py-2.5 font-mono text-xs md:text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-lime" 
+            placeholder="vless:// или hysteria2:// ссылка" 
+            value="${value}"
+            spellcheck="false">
+          <button type="button" onclick="removeSingleInput(${id})" class="p-2.5 bg-zinc-950/40 hover:bg-red-950/30 border border-zinc-850 hover:border-red-900/40 rounded-xl text-zinc-500 hover:text-red-400 transition-all duration-150 focus:outline-none" title="Удалить">
+            <span class="text-sm select-none font-bold">×</span>
+          </button>
+        `;
+        singleInputsList.appendChild(row);
+        updateInputIndices();
+      };
+
+      window.removeSingleInput = function(id) {
+        const row = $(`inputRow-${id}`);
+        if (row) {
+          row.remove();
+          updateInputIndices();
+        }
+      };
+
+      function updateInputIndices() {
+        const rows = singleInputsList.children;
+        if (rows.length === 0) {
+          addSingleInput();
+          return;
+        }
+        Array.from(rows).forEach((row, index) => {
+          row.querySelector('span').textContent = index + 1;
+        });
+      }
+
+      // --- QR CODE MODAL FLOW ---
+      let qrcodeInstance = null;
+      window.showQrModal = function(encodedUrl) {
+        const url = decodeURIComponent(encodedUrl);
+        const canvas = $('qrcodeCanvas');
+        canvas.innerHTML = '';
+        
+        $('qrLinkText').textContent = url;
+        
+        qrcodeInstance = new QRCode(canvas, {
+          text: url,
+          width: 180,
+          height: 180,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+        
+        $('qrModal').classList.remove('hidden');
+      };
+      
+      window.closeQrModal = function() {
+        $('qrModal').classList.add('hidden');
+      };
+
+      // --- RESULTS COPY ACTIONS ---
+      window.copySingleLink = function(button, encodedUrl) {
+        const url = decodeURIComponent(encodedUrl);
+        navigator.clipboard.writeText(url).then(() => {
+          button.textContent = '✅';
+          button.classList.add('text-lime', 'border-lime/30');
+          showToast('Ссылка скопирована!');
+          setTimeout(() => {
+            button.textContent = '📋';
+            button.classList.remove('text-lime', 'border-lime/30');
+          }, 2050);
+        }).catch(() => {
+          showToast('Не удалось скопировать', 'error');
+        });
+      };
+
+      window.copyAllFromProtocol = function(proto) {
+        if (conversionResults.length === 0) return;
+        const allUrls = conversionResults.map(res => res.generated[proto]).join('\n');
+        navigator.clipboard.writeText(allUrls).then(() => {
+          showToast(`Скопировано ссылок (${proto.toUpperCase()}): ${conversionResults.length}`);
+        }).catch(() => {
+          showToast('Не удалось скопировать', 'error');
+        });
+      };
+
+      window.copySingboxJson = function() {
+        const json = singboxJsonCode.textContent;
+        navigator.clipboard.writeText(json).then(() => {
+          showToast('JSON конфигурация скопирована!');
+        }).catch(() => {
+          showToast('Не удалось скопировать', 'error');
+        });
+      };
+
+      window.copyUciScript = function() {
+        const script = uciScriptCode.textContent;
+        navigator.clipboard.writeText(script).then(() => {
+          showToast('UCI Скрипт импорта скопирован!');
+        }).catch(() => {
+          showToast('Не удалось скопировать', 'error');
+        });
+      };
+
+      // --- CONVERT ACTION ---
+      window.performConversion = function() {
+        validationErrorBlock.classList.add('hidden');
+        
+        let linksToParse = [];
+        if (inputMode === 'single') {
+          const inputs = document.querySelectorAll('.vpn-input');
+          inputs.forEach(inp => {
+            const val = inp.value.trim();
+            if (val) linksToParse.push({ value: val, el: inp });
+          });
+        } else {
+          const lines = bulkTextarea.value.split('\n');
+          lines.forEach(line => {
+            const val = line.trim();
+            if (val) linksToParse.push({ value: val, el: bulkTextarea });
+          });
+        }
+
+        if (linksToParse.length === 0) {
+          showValidationError('Введите хотя бы одну ссылку для обработки');
+          return;
+        }
+
+        // Grab values from inputs
+        const config = {
+          speed: parseInt(speedRange.value, 10) || 500,
+          fastOpen: fastOpenToggle.checked,
+          sni: sniInput.value.trim(),
+          extraParams: extraParams.value.trim(),
+          xhttpPath: cfgXhttpPath.value.trim(),
+          xhttpExtra: cfgXhttpExtra.value.trim(),
+          insecure: insecureToggle.checked,
+          pinsha256: pinsha256Input.value.trim(),
+          hop: hopInput.value.trim(),
+          mtu: mtuInput.value.trim(),
+          pbk: cfgPbk.value.trim(),
+          sid: cfgSid.value.trim()
+        };
+
+        const results = [];
+        const errors = [];
+
+        linksToParse.forEach((item, idx) => {
+          const res = parseVpnLink(item.value);
+          if (res.error) {
+            errors.push(`[Ссылка ${idx + 1}]: ${res.error}`);
+            if (inputMode === 'single' && item.el) {
+              item.el.classList.add('border-red-900', 'focus:border-red-650', 'ring-red-950/20');
+            }
+          } else {
+            if (inputMode === 'single' && item.el) {
+              item.el.classList.remove('border-red-900', 'focus:border-red-650', 'ring-red-950/20');
+            }
+            const generated = generateZeroBlockLinks(res.parsed, config);
+            results.push({
+              parsed: res.parsed,
+              generated: generated
+            });
+          }
+        });
+
+        if (errors.length > 0) {
+          showValidationError(errors.join('<br>'));
+          return;
+        }
+
+        conversionResults = results;
+        
+        // Show Parsed Preview Table
+        renderPreviewTable();
+
+        // Update Counts
+        realityCount.textContent = results.length;
+        xhttpCount.textContent = results.length;
+        hysteriaCount.textContent = results.length;
+
+        // Render target tables
+        renderTargetTable('reality', tableBodyReality);
+        renderTargetTable('xhttp', tableBodyXhttp);
+        renderTargetTable('hysteria', tableBodyHysteria);
+
+        // Generate JSON configs & UCI scripts
+        singboxJsonCode.textContent = generateSingboxOutboundsJson(results, config);
+        uciScriptCode.textContent = generateUciImportScript(results, config);
+
+        // Show results
+        resultsBlock.classList.remove('hidden');
+        
+        // Placeholder banner
+        const hasPlaceholder = results.some(r => r.generated.hasPlaceholders);
+        if (hasPlaceholder) {
+          placeholderWarningBanner.classList.remove('hidden');
+        } else {
+          placeholderWarningBanner.classList.add('hidden');
+        }
+
+        resultsBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Save history entry
+        saveToHistory(linksToParse.map(l => l.value), results, config);
+      };
+
+      function showValidationError(msg) {
+        validationErrorText.innerHTML = msg;
+        validationErrorBlock.classList.remove('hidden');
+        validationErrorBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // --- GENERATORS FOR JSON & UCI ---
+      function generateSingboxOutboundsJson(results, config) {
+        const outbounds = [];
+        
+        results.forEach(res => {
+          const p = res.parsed;
+          const name = p.cleanedName;
+          const cred = p.credentials;
+          const host = p.host;
+          const port = p.port;
+          const sni = config.sni || p.sni || host;
+
+          // VLESS REALITY Outbound
+          const pbk = config.pbk || p.pbk || 'PLACEHOLDER_PBK';
+          const sid = config.sid || p.sid || 'PLACEHOLDER_SID';
+          outbounds.push({
+            "type": "vless",
+            "tag": `${name}-reality`,
+            "server": host,
+            "server_port": port,
+            "uuid": cred,
+            "flow": "xtls-rprx-vision",
+            "tls": {
+              "enabled": true,
+              "server_name": sni,
+              "utls": {
+                "enabled": true,
+                "fingerprint": "chrome"
+              },
+              "reality": {
+                "enabled": true,
+                "public_key": pbk,
+                "short_id": sid
+              }
+            }
+          });
+
+          // VLESS XHTTP Outbound
+          const xhttpPath = config.xhttpPath || '/xhttppath/';
+          let extraObj = {};
+          try {
+            if (config.xhttpExtra) extraObj = JSON.parse(config.xhttpExtra);
+          } catch(e) {}
+          
+          outbounds.push({
+            "type": "vless",
+            "tag": `${name}-xhttp`,
+            "server": host,
+            "server_port": port,
+            "uuid": cred,
+            "transport": {
+              "type": "xhttp",
+              "path": xhttpPath,
+              "host": [ host ],
+              ...extraObj
+            },
+            "tls": {
+              "enabled": true,
+              "server_name": host,
+              "utls": {
+                "enabled": true,
+                "fingerprint": "random"
+              },
+              "alpn": [ "h2", "http/1.1" ]
+            }
+          });
+
+          // Hysteria2 Outbound
+          const hysteriaOutbound = {
+            "type": "hysteria2",
+            "tag": `${name}-hysteria`,
+            "server": host,
+            "server_port": port,
+            "password": cred,
+            "tls": {
+              "enabled": true,
+              "server_name": sni,
+              "insecure": !!config.insecure
+            }
+          };
+          if (config.pinsha256) hysteriaOutbound.tls.pin_sha256 = config.pinsha256;
+          hysteriaOutbound.up_mbps = config.speed || 500;
+          hysteriaOutbound.down_mbps = config.speed || 500;
+          
+          outbounds.push(hysteriaOutbound);
+        });
+
+        return JSON.stringify(outbounds, null, 2);
+      }
+
+      function generateUciImportScript(results, config) {
+        let script = `#!/bin/sh\n# Автоматический импорт прокси для ZeroBlock\n# Скопируйте и запустите на роутере через SSH\n\n`;
+        
+        results.forEach(res => {
+          const p = res.parsed;
+          const name = p.cleanedName;
+          const cred = p.credentials;
+          const host = p.host;
+          const port = p.port;
+          const sni = config.sni || p.sni || host;
+
+          // Hysteria2
+          script += `# Добавление Hysteria2: ${name}\n`;
+          script += `uci add zeroblock proxy\n`;
+          script += `uci set zeroblock.@proxy[-1].name='${name}-hysteria'\n`;
+          script += `uci set zeroblock.@proxy[-1].proto='hysteria2'\n`;
+          script += `uci set zeroblock.@proxy[-1].server='${host}'\n`;
+          script += `uci set zeroblock.@proxy[-1].port='${port}'\n`;
+          script += `uci set zeroblock.@proxy[-1].password='${cred}'\n`;
+          script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
+          script += `uci set zeroblock.@proxy[-1].insecure='${config.insecure ? "1" : "0"}'\n`;
+          if (config.pinsha256) script += `uci set zeroblock.@proxy[-1].pinsha256='${config.pinsha256}'\n`;
+          if (config.hop) script += `uci set zeroblock.@proxy[-1].hop='${config.hop}'\n`;
+          if (config.mtu) script += `uci set zeroblock.@proxy[-1].mtu='${config.mtu}'\n`;
+          script += `\n`;
+
+          // VLESS Reality
+          const pbk = config.pbk || p.pbk || 'PLACEHOLDER_PBK';
+          const sid = config.sid || p.sid || 'PLACEHOLDER_SID';
+          script += `# Добавление VLESS Reality: ${name}\n`;
+          script += `uci add zeroblock proxy\n`;
+          script += `uci set zeroblock.@proxy[-1].name='${name}-reality'\n`;
+          script += `uci set zeroblock.@proxy[-1].proto='vless'\n`;
+          script += `uci set zeroblock.@proxy[-1].server='${host}'\n`;
+          script += `uci set zeroblock.@proxy[-1].port='${port}'\n`;
+          script += `uci set zeroblock.@proxy[-1].uuid='${cred}'\n`;
+          script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
+          script += `uci set zeroblock.@proxy[-1].flow='xtls-rprx-vision'\n`;
+          script += `uci set zeroblock.@proxy[-1].security='reality'\n`;
+          script += `uci set zeroblock.@proxy[-1].pbk='${pbk}'\n`;
+          script += `uci set zeroblock.@proxy[-1].sid='${sid}'\n`;
+          script += `\n`;
+        });
+        
+        script += `uci commit zeroblock\n`;
+        script += `/etc/init.d/zeroblock restart\n`;
+        script += `echo "✅ Все прокси успешно импортированы в ZeroBlock!"\n`;
+        return script;
+      }
+
+      // --- RENDER TABLES ---
+      function renderPreviewTable() {
+        previewTableBody.innerHTML = '';
+        conversionResults.forEach((res, index) => {
+          const p = res.parsed;
+          const tr = document.createElement('tr');
+          tr.className = 'border-b border-zinc-900/60 hover:bg-zinc-900/10 transition-colors';
+          tr.innerHTML = `
+            <td class="py-2 px-4 text-zinc-650 font-bold">${index + 1}</td>
+            <td class="py-2 px-4 font-semibold text-zinc-200 select-all">${escapeHtml(p.protocol.toUpperCase())}</td>
+            <td class="py-2 px-4 text-zinc-400 select-all max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">${escapeHtml(p.credentials)}</td>
+            <td class="py-2 px-4 text-zinc-300 select-all">${escapeHtml(p.host)}:${p.port}</td>
+            <td class="py-2 px-4 text-cyan select-all">${escapeHtml(p.sni)}</td>
+            <td class="py-2 px-4 text-zinc-450 select-all">${escapeHtml(p.pbk || '—')}</td>
+            <td class="py-2 px-4 text-zinc-450 select-all">${escapeHtml(p.sid || '—')}</td>
+          `;
+          previewTableBody.appendChild(tr);
+        });
+        previewSection.classList.remove('hidden');
+      }
+
+      function renderTargetTable(proto, tbody) {
+        tbody.innerHTML = '';
+        conversionResults.forEach((res, index) => {
+          const generatedUrl = res.generated[proto];
+          const isCf = (proto === 'hysteria' && isCloudflareHost(res.parsed.host));
+          const tr = document.createElement('tr');
+          tr.className = 'border-b border-zinc-900 hover:bg-zinc-900/20 transition-colors group';
+
+          // Formatting for Reality placeholders
+          let urlHtml = escapeHtml(generatedUrl);
+          if (proto === 'reality' && res.generated.hasPlaceholders) {
+            urlHtml = urlHtml
+              .replace(/(pbk=)PLACEHOLDER_PBK/g, '$1<span class="bg-amber-900/60 text-amber-200 border border-amber-500 rounded px-1 font-bold animate-pulse">PLACEHOLDER_PBK</span>')
+              .replace(/(sid=)PLACEHOLDER_SID/g, '$1<span class="bg-amber-900/60 text-amber-200 border border-amber-500 rounded px-1 font-bold animate-pulse">PLACEHOLDER_SID</span>');
+          }
+
+          // Cloudflare UDP alert icon
+          const cfAlert = isCf 
+            ? `<span class="inline-flex ml-2 text-amber-400 cursor-help" title="Внимание: Hysteria2 использует UDP. Проксирование через Cloudflare CDN/Workers не поддерживается по умолчанию!">⚠️ CF-UDP</span>`
+            : '';
+
+          tr.innerHTML = `
+            <td class="py-3 px-4 text-zinc-600 font-mono select-none">${index + 1}</td>
+            <td class="py-3 px-4 font-mono font-medium text-zinc-350">
+              <span class="bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800 text-[11px] text-zinc-400 select-all">${escapeHtml(res.parsed.cleanedName)}</span>
+              ${cfAlert}
+            </td>
+            <td class="py-3 px-4 font-mono text-xs max-w-sm md:max-w-md">
+              <div class="overflow-x-auto whitespace-nowrap bg-zinc-950 py-1.5 px-3 border border-zinc-900 rounded-lg select-all">
+                <code>${urlHtml}</code>
+              </div>
+            </td>
+            <td class="py-3 px-4 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="copySingleLink(this, '${encodeURIComponent(generatedUrl)}')" class="p-2 bg-zinc-900 hover:bg-zinc-850 hover:text-cyan border border-zinc-850 rounded-lg text-zinc-400 transition-all font-mono text-xs" title="Копировать">
+                  📋
+                </button>
+                <button onclick="showQrModal('${encodeURIComponent(generatedUrl)}')" class="p-2 bg-zinc-900 hover:bg-zinc-850 hover:text-lime border border-zinc-850 rounded-lg text-zinc-400 transition-all font-mono text-xs" title="Показать QR-код">
+                  📱
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // --- HISTORY FLOW ---
+      function saveToHistory(inputs, results, config) {
+        const entry = {
+          id: Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+          timestamp: Date.now(),
+          inputs: inputs,
+          resultsCount: results.length,
+          config: config
+        };
+        historyItems.unshift(entry);
+        if (historyItems.length > 5) historyItems.pop();
+        localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(historyItems));
+        renderHistoryList();
+      }
+
+      window.clearHistory = function() {
+        historyItems = [];
+        localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(historyItems));
+        renderHistoryList();
+        showToast('История очищена');
+      };
+
+      function renderHistoryList() {
+        if (historyItems.length === 0) {
+          historyEmpty.classList.remove('hidden');
+          historyList.classList.add('hidden');
+          return;
+        }
+        historyEmpty.classList.add('hidden');
+        historyList.classList.remove('hidden');
+        historyList.innerHTML = '';
+
+        historyItems.forEach(entry => {
+          const dateStr = new Date(entry.timestamp).toLocaleString('ru-RU', {
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            day: 'numeric', month: 'short'
+          });
+          
+          const div = document.createElement('div');
+          div.className = 'py-3 flex items-center justify-between hover:bg-zinc-900/20 px-2 rounded-xl transition-all group';
+          div.innerHTML = `
+            <div class="flex flex-col cursor-pointer flex-1" onclick="restoreHistoryEntry('${entry.id}')">
+              <span class="font-mono text-zinc-300 font-medium">Конверсия: ${entry.resultsCount} ссылок</span>
+              <span class="text-[10px] text-zinc-500 font-mono">${dateStr}</span>
+            </div>
+            <button onclick="restoreHistoryEntry('${entry.id}')" class="text-xs font-mono text-cyan opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-950 border border-zinc-800 hover:border-cyan px-2.5 py-1 rounded-lg">
+              Восстановить
+            </button>
+          `;
+          historyList.appendChild(div);
+        });
+      }
+
+      window.restoreHistoryEntry = function(id) {
+        const entry = historyItems.find(e => e.id === id);
+        if (!entry) return;
+
+        // Restore configs
+        speedRange.value = entry.config.speed || 500;
+        speedValue.textContent = entry.config.speed || 500;
+        fastOpenToggle.checked = !!entry.config.fastOpen;
+        sniInput.value = entry.config.sni || '';
+        extraParams.value = entry.config.extraParams || '';
+        cfgXhttpPath.value = entry.config.xhttpPath || '/xhttppath/';
+        cfgXhttpExtra.value = entry.config.xhttpExtra || '{"browser":"chrome"}';
+        insecureToggle.checked = !!entry.config.insecure;
+        pinsha256Input.value = entry.config.pinsha256 || '';
+        hopInput.value = entry.config.hop || '';
+        mtuInput.value = entry.config.mtu || '';
+        cfgPbk.value = entry.config.pbk || '';
+        cfgSid.value = entry.config.sid || '';
+
+        // Restore inputs
+        if (entry.inputs.length === 1 && inputMode === 'single') {
+          singleInputsList.innerHTML = '';
+          addSingleInput(entry.inputs[0]);
+        } else if (entry.inputs.length > 1) {
+          switchInputMode('bulk');
+          bulkTextarea.value = entry.inputs.join('\n');
+        } else {
+          switchInputMode('bulk');
+          bulkTextarea.value = entry.inputs.join('\n');
+        }
+
+        performConversion();
+        showToast('История восстановлена!');
+      };
+
+      // --- PERSISTENCE ---
+      function loadSettings() {
+        const raw = localStorage.getItem(STORAGE_KEY_SETTINGS);
+        if (raw) {
+          try {
+            const settings = JSON.parse(raw);
+            speedRange.value = settings.speed || 500;
+            speedValue.textContent = settings.speed || 500;
+            fastOpenToggle.checked = settings.fastOpen !== false;
+            sniInput.value = settings.sni || '';
+            extraParams.value = settings.extraParams || '';
+            cfgXhttpPath.value = settings.xhttpPath || '/xhttppath/';
+            cfgXhttpExtra.value = settings.xhttpExtra || '{"browser":"chrome"}';
+            insecureToggle.checked = !!settings.insecure;
+            pinsha256Input.value = settings.pinsha256 || '';
+            hopInput.value = settings.hop || '';
+            mtuInput.value = settings.mtu || '';
+            cfgPbk.value = settings.pbk || '';
+            cfgSid.value = settings.sid || '';
+          } catch (e) {}
+        }
+      }
+
+      function saveSettingsOnInput() {
+        const settings = {
+          speed: parseInt(speedRange.value, 10) || 500,
+          fastOpen: fastOpenToggle.checked,
+          sni: sniInput.value.trim(),
+          extraParams: extraParams.value.trim(),
+          xhttpPath: cfgXhttpPath.value.trim(),
+          xhttpExtra: cfgXhttpExtra.value.trim(),
+          insecure: insecureToggle.checked,
+          pinsha256: pinsha256Input.value.trim(),
+          hop: hopInput.value.trim(),
+          mtu: mtuInput.value.trim(),
+          pbk: cfgPbk.value.trim(),
+          sid: cfgSid.value.trim()
+        };
+        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+      }
+
+      // Track configuration updates
+      const trackSettings = [
+        speedRange, fastOpenToggle, sniInput, extraParams, 
+        cfgXhttpPath, cfgXhttpExtra, insecureToggle, 
+        pinsha256Input, hopInput, mtuInput, cfgPbk, cfgSid
+      ];
+      trackSettings.forEach(el => {
+        el.addEventListener('input', saveSettingsOnInput);
+        el.addEventListener('change', saveSettingsOnInput);
       });
 
-      historyList.appendChild(item);
-    });
-  } else {
-    historyEmpty.classList.remove('hidden');
-    historyList.classList.add('hidden');
-    historyActions.classList.add('hidden');
-  }
-}
+      function escapeHtml(string) {
+        return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
 
-/* ============ MAIN CONVERT ============ */
-function doConvert() {
-  if (!lastParsed) return;
+      // --- STARTUP INIT ---
+      loadSettings();
+      
+      try {
+        const rawHistory = localStorage.getItem(STORAGE_KEY_HISTORY);
+        if (rawHistory) historyItems = JSON.parse(rawHistory);
+      } catch (e) {}
+      
+      renderHistoryList();
+      addSingleInput();
 
-  const settings = {
-    speed: parseInt(speedRange.value, 10) || 500,
-    fastOpen: fastOpenToggle.checked,
-    sni: sniInput.value,
-    extraParams: extraParams.value,
-    insecure: insecureToggle.checked,
-    pinsha256: pinsha256Input.value,
-    hop: hopInput.value,
-    mtu: mtuInput.value
-  };
-
-  const href = generateHysteria2Uri(lastParsed, settings);
-  showResult(href);
-
-  // Save history
-  const entry = {
-    id: Date.now() + '-' + Math.random().toString(36).substring(2, 6),
-    inputLink: inputLink.value.trim(),
-    outputLink: href,
-    parsed: lastParsed,
-    settings: {
-      speed: settings.speed,
-      fastOpen: settings.fastOpen,
-      sni: settings.sni,
-      extraParams: settings.extraParams,
-      insecure: settings.insecure,
-      pinsha256: settings.pinsha256,
-      hop: settings.hop,
-      mtu: settings.mtu
-    },
-    createdAt: Date.now()
-  };
-  saveHistoryEntry(entry);
-  renderHistory();
-
-  // Save last SNI
-  if (lastParsed.sni) storageSet(SNI_KEY, lastParsed.sni);
-
-  showNotification('✅ Hysteria2 ссылка сгенерирована!', false);
-}
-
-/* ============ PARSE TRIGGER ============ */
-function triggerParse() {
-  clearError();
-  const raw = inputLink.value.trim();
-  btnConvert.disabled = true;
-  previewSection.classList.add('hidden');
-  previewSection.classList.remove('fade-enter');
-  resultSection.classList.add('hidden');
-  resultSection.classList.remove('fade-enter');
-  lastParsed = null;
-
-  if (!raw) {
-    inputLink.classList.remove('filled');
-    if (!isSniManual) {
-      sniInput.value = '';
-    }
-    return;
-  }
-
-  inputLink.classList.add('filled');
-
-  const result = parseVlessXHttp(raw);
-  if (result.error) {
-    showError(result.error);
-    return;
-  }
-
-  lastParsed = result.parsed;
-  // Auto-fill SNI if available and user hasn't manually set one
-  if (!isSniManual) {
-    sniInput.value = result.parsed.sni || '';
-  }
-
-  populatePreview(result.parsed);
-  btnConvert.disabled = false;
-}
-
-/* ============ CLIPBOARD ============ */
-function copyToClipboard(text) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(function() {
-      showCopiedFeedback();
-    }).catch(function() {
-      fallbackCopy(text);
-    });
-  } else {
-    fallbackCopy(text);
-  }
-}
-
-function fallbackCopy(text) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.left = '-9999px';
-  document.body.appendChild(ta);
-  ta.focus();
-  ta.select();
-  try {
-    document.execCommand('copy');
-    showCopiedFeedback();
-  } catch { showNotification('❌ Не удалось скопировать', true); }
-  document.body.removeChild(ta);
-}
-
-let copyTimeout = null;
-function showCopiedFeedback() {
-  btnCopy.classList.add('copied');
-  btnCopy.textContent = '✅ Скопировано!';
-  copyFeedback.classList.remove('hidden');
-  clearTimeout(copyTimeout);
-  copyTimeout = setTimeout(function() {
-    btnCopy.classList.remove('copied');
-    btnCopy.textContent = '📋 Копировать';
-    copyFeedback.classList.add('hidden');
-  }, 2000);
-}
-
-/* ============ SETTINGS PERSISTENCE ============ */
-function loadSettings() {
-  const s = storageGet(SETTINGS_KEY, null);
-  if (s) {
-    speedRange.value = Math.max(50, Math.min(2000, s.speed || 500));
-    speedValue.textContent = speedRange.value;
-    fastOpenToggle.checked = s.fastOpen !== undefined ? s.fastOpen : true;
-    insecureToggle.checked = s.insecure !== undefined ? s.insecure : true;
-    pinsha256Input.value = s.pinsha256 || '';
-    hopInput.value = s.hop || '';
-    mtuInput.value = s.mtu || '';
-  }
-  // Load last SNI
-  const lastSni = storageGet(SNI_KEY, '');
-  if (lastSni && !sniInput.value.trim()) sniInput.value = lastSni;
-}
-
-function saveSettings() {
-  storageSet(SETTINGS_KEY, {
-    speed: parseInt(speedRange.value, 10) || 500,
-    fastOpen: fastOpenToggle.checked,
-    insecure: insecureToggle.checked,
-    pinsha256: pinsha256Input.value,
-    hop: hopInput.value,
-    mtu: mtuInput.value
-  });
-}
-
-/* ============ EVENT BINDING ============ */
-// Parse on input with debounce
-let parseDebounce = null;
-inputLink.addEventListener('input', function() {
-  isSniManual = false; // Reset manual SNI flag so that new link's SNI is parsed
-  clearTimeout(parseDebounce);
-  parseDebounce = setTimeout(triggerParse, 300);
-});
-
-// Convert button
-btnConvert.addEventListener('click', doConvert);
-
-// Copy button
-btnCopy.addEventListener('click', function() {
-  const text = resultLink.textContent;
-  if (text && text.startsWith('hysteria2://')) {
-    copyToClipboard(text);
-  }
-});
-
-// Settings save on change
-speedRange.addEventListener('input', function() {
-  speedValue.textContent = speedRange.value;
-  saveSettings();
-});
-
-fastOpenToggle.addEventListener('change', saveSettings);
-
-// Extra params and SNI save on change (debounced)
-let settingsDebounce = null;
-function debouncedSaveSettings() {
-  clearTimeout(settingsDebounce);
-  settingsDebounce = setTimeout(saveSettings, 500);
-}
-sniInput.addEventListener('input', function() {
-  if (sniInput.value.trim() === '') {
-    isSniManual = false;
-  } else {
-    isSniManual = true;
-  }
-  debouncedSaveSettings();
-});
-extraParams.addEventListener('input', debouncedSaveSettings);
-
-// Advanced settings listeners
-advancedTrigger.addEventListener('click', function() {
-  const isHidden = advancedContent.classList.toggle('hidden');
-  if (isHidden) {
-    advancedArrow.style.transform = 'rotate(0deg)';
-  } else {
-    advancedArrow.style.transform = 'rotate(90deg)';
-  }
-});
-
-helpTrigger.addEventListener('click', function() {
-  const isHidden = helpContent.classList.toggle('hidden');
-  if (isHidden) {
-    helpArrow.style.transform = 'rotate(0deg)';
-  } else {
-    helpArrow.style.transform = 'rotate(90deg)';
-  }
-});
-
-insecureToggle.addEventListener('change', saveSettings);
-pinsha256Input.addEventListener('input', debouncedSaveSettings);
-hopInput.addEventListener('input', debouncedSaveSettings);
-mtuInput.addEventListener('input', debouncedSaveSettings);
-
-// Clear history
-btnClearHistory.addEventListener('click', function() {
-  clearHistory();
-});
-
-// Keyboard: Enter to convert (when input focused)
-inputLink.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !btnConvert.disabled) {
-    e.preventDefault();
-    doConvert();
-  }
-});
-
-// Notification close on click
-document.addEventListener('click', function(e) {
-  if (e.target.closest('.notification')) {
-    e.target.remove();
-  }
-});
-
-/* ============ INIT ============ */
-loadSettings();
-renderHistory();
-
-// Auto-detect paste via input listener (already set above)
-
-console.log('⚡ VLESS → Hysteria2 Converter v2.0 loaded');
-})();
-</script>
+    })();
+  </script>
 </body>
 </html>
