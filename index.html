@@ -727,7 +727,7 @@
           urlPart = trimmed.substring(0, hashIdx);
         }
 
-        const normalized = urlPart.replace(/^(vless|hysteria2):\/\//i, 'https://');
+        const normalized = urlPart.replace(/^(vless|hysteria2):\/\//i, 'http://');
         let url;
         try {
           url = new URL(normalized);
@@ -795,6 +795,7 @@
 
         let reality = '';
         let xhttp = '';
+        let hysteria = '';
         let pbk = 'PLACEHOLDER_PBK';
         let sid = 'PLACEHOLDER_SID';
 
@@ -833,28 +834,49 @@
         }
 
         // 3. Hysteria2
-        const params = new URLSearchParams();
-        params.set('sni', sni);
-        params.set('insecure', config.insecure ? '1' : '0');
-        params.set('alpn', 'h3');
-        params.set('down', String(config.speed || 500));
-        params.set('up', String(config.speed || 500));
-        params.set('fastopen', config.fastOpen ? '1' : '0');
-        
-        if (config.pinsha256) params.set('pinsha256', config.pinsha256);
-        if (config.hop) params.set('hop', config.hop);
-        if (config.mtu) params.set('mtu', config.mtu);
-        
-        if (config.extraParams) {
-          try {
-            const extraQuery = new URLSearchParams(config.extraParams);
-            for (const [k, v] of extraQuery) {
-              params.set(k, v);
-            }
-          } catch (e) {}
+        if (subtype === 'hysteria2') {
+          const params = new URLSearchParams();
+          for (const [k, v] of Object.entries(parsed.rawQuery)) {
+            params.set(k, v);
+          }
+          
+          // Apply overrides or defaults
+          if (config.sni) {
+            params.set('sni', config.sni);
+          } else if (!params.has('sni')) {
+            params.set('sni', sni);
+          }
+          
+          if (config.insecure !== undefined) {
+            params.set('insecure', config.insecure ? '1' : '0');
+          } else if (!params.has('insecure')) {
+            params.set('insecure', '0');
+          }
+          
+          if (!params.has('alpn')) {
+            params.set('alpn', 'h3');
+          }
+          
+          if (config.speed) {
+            params.set('down', String(config.speed));
+            params.set('up', String(config.speed));
+          } else {
+            if (!params.has('down')) params.set('down', '500');
+            if (!params.has('up')) params.set('up', '500');
+          }
+          
+          if (config.fastOpen !== undefined) {
+            params.set('fastopen', config.fastOpen ? '1' : '0');
+          } else if (!params.has('fastopen')) {
+            params.set('fastopen', '1');
+          }
+          
+          if (config.pinsha256) params.set('pinsha256', config.pinsha256);
+          if (config.hop) params.set('hop', config.hop);
+          if (config.mtu) params.set('mtu', config.mtu);
+          
+          hysteria = `hysteria2://${cred}@${host}:${port}?${params.toString()}#${nameHysteria}`;
         }
-        
-        const hysteria = `hysteria2://${cred}@${host}:${port}?${params.toString()}#${nameHysteria}`;
 
         return {
           reality,
@@ -1052,15 +1074,8 @@
       function generateBase64Subscription() {
         const links = [];
         conversionResults.forEach(res => {
-          const subtype = getInputSubtype(res.parsed);
-          
-          if (subtype === 'reality') {
-            if (res.generated.reality) links.push(res.generated.reality);
-          } else if (subtype === 'xhttp') {
-            if (res.generated.xhttp) links.push(res.generated.xhttp);
-          }
-          
-          // Hysteria2 is generated for all (VLESS Reality, VLESS XHTTP, Hysteria2)
+          if (res.generated.reality) links.push(res.generated.reality);
+          if (res.generated.xhttp) links.push(res.generated.xhttp);
           if (res.generated.hysteria) links.push(res.generated.hysteria);
         });
         
@@ -1295,6 +1310,11 @@
             }
           };
         } else if (proto === 'hysteria') {
+          const insecureVal = p.rawQuery.insecure !== undefined ? (p.rawQuery.insecure === '1') : !!config.insecure;
+          const upVal = p.rawQuery.up ? parseInt(p.rawQuery.up, 10) : (config.speed || 500);
+          const downVal = p.rawQuery.down ? parseInt(p.rawQuery.down, 10) : (config.speed || 500);
+          const pinsha256Val = p.rawQuery.pinsha256 || config.pinsha256 || '';
+
           const hysteriaOutbound = {
             "type": "hysteria2",
             "tag": name,
@@ -1304,12 +1324,12 @@
             "tls": {
               "enabled": true,
               "server_name": sni,
-              "insecure": !!config.insecure
+              "insecure": insecureVal
             }
           };
-          if (config.pinsha256) hysteriaOutbound.tls.pin_sha256 = config.pinsha256;
-          hysteriaOutbound.up_mbps = config.speed || 500;
-          hysteriaOutbound.down_mbps = config.speed || 500;
+          if (pinsha256Val) hysteriaOutbound.tls.pin_sha256 = pinsha256Val;
+          hysteriaOutbound.up_mbps = upVal;
+          hysteriaOutbound.down_mbps = downVal;
           return hysteriaOutbound;
         }
         return null;
@@ -1319,17 +1339,18 @@
         const outbounds = [];
         
         results.forEach(res => {
-          const subtype = getInputSubtype(res.parsed);
-          
-          if (subtype === 'reality') {
+          if (res.generated.reality) {
             outbounds.push(getSingleSingboxOutboundJson(res, 'reality', config));
-          } else if (subtype === 'xhttp') {
+          }
+          if (res.generated.xhttp) {
             outbounds.push(getSingleSingboxOutboundJson(res, 'xhttp', config));
           }
-          outbounds.push(getSingleSingboxOutboundJson(res, 'hysteria', config));
+          if (res.generated.hysteria) {
+            outbounds.push(getSingleSingboxOutboundJson(res, 'hysteria', config));
+          }
         });
 
-        return JSON.stringify(outbounds, null, 2);
+        return JSON.stringify(outbounds.filter(o => !!o), null, 2);
       }
 
       function generateUciImportScript(results, config) {
@@ -1341,26 +1362,32 @@
           const host = p.host;
           const port = p.port;
           const sni = config.sni || p.sni || host;
-          const subtype = getInputSubtype(p);
 
-          // 1. Converted Hysteria2
-          const nameHy2 = res.generated.names.hysteria;
-          script += `# Добавление Hysteria2: ${nameHy2}\n`;
-          script += `uci add zeroblock proxy\n`;
-          script += `uci set zeroblock.@proxy[-1].name='${nameHy2}'\n`;
-          script += `uci set zeroblock.@proxy[-1].proto='hysteria2'\n`;
-          script += `uci set zeroblock.@proxy[-1].server='${host}'\n`;
-          script += `uci set zeroblock.@proxy[-1].port='${port}'\n`;
-          script += `uci set zeroblock.@proxy[-1].password='${cred}'\n`;
-          script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
-          script += `uci set zeroblock.@proxy[-1].insecure='${config.insecure ? "1" : "0"}'\n`;
-          if (config.pinsha256) script += `uci set zeroblock.@proxy[-1].pinsha256='${config.pinsha256}'\n`;
-          if (config.hop) script += `uci set zeroblock.@proxy[-1].hop='${config.hop}'\n`;
-          if (config.mtu) script += `uci set zeroblock.@proxy[-1].mtu='${config.mtu}'\n`;
-          script += `\n`;
+          // 1. Native Hysteria2
+          if (res.generated.hysteria) {
+            const nameHy2 = res.generated.names.hysteria;
+            const insecureVal = p.rawQuery.insecure !== undefined ? p.rawQuery.insecure : (config.insecure ? "1" : "0");
+            const pinsha256Val = p.rawQuery.pinsha256 || config.pinsha256 || '';
+            const hopVal = p.rawQuery.hop || config.hop || '';
+            const mtuVal = p.rawQuery.mtu || config.mtu || '';
 
-          // 2. Original VLESS/XHTTP Protocol (Cleaned)
-          if (subtype === 'reality') {
+            script += `# Добавление Hysteria2: ${nameHy2}\n`;
+            script += `uci add zeroblock proxy\n`;
+            script += `uci set zeroblock.@proxy[-1].name='${nameHy2}'\n`;
+            script += `uci set zeroblock.@proxy[-1].proto='hysteria2'\n`;
+            script += `uci set zeroblock.@proxy[-1].server='${host}'\n`;
+            script += `uci set zeroblock.@proxy[-1].port='${port}'\n`;
+            script += `uci set zeroblock.@proxy[-1].password='${cred}'\n`;
+            script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
+            script += `uci set zeroblock.@proxy[-1].insecure='${insecureVal}'\n`;
+            if (pinsha256Val) script += `uci set zeroblock.@proxy[-1].pinsha256='${pinsha256Val}'\n`;
+            if (hopVal) script += `uci set zeroblock.@proxy[-1].hop='${hopVal}'\n`;
+            if (mtuVal) script += `uci set zeroblock.@proxy[-1].mtu='${mtuVal}'\n`;
+            script += `\n`;
+          }
+
+          // 2. VLESS Reality
+          if (res.generated.reality) {
             const nameReality = res.generated.names.reality;
             const pbk = p.pbk || config.pbk || 'PLACEHOLDER_PBK';
             const sid = p.sid || config.sid || 'PLACEHOLDER_SID';
@@ -1379,7 +1406,10 @@
             script += `uci set zeroblock.@proxy[-1].pbk='${pbk}'\n`;
             script += `uci set zeroblock.@proxy[-1].sid='${sid}'\n`;
             script += `\n`;
-          } else if (subtype === 'xhttp') {
+          }
+
+          // 3. VLESS XHTTP
+          if (res.generated.xhttp) {
             const nameXhttp = res.generated.names.xhttp;
             let xhttpPath = p.rawQuery.path || '/xhttppath/';
             if (config.xhttpPath && (config.xhttpPath !== '/xhttppath/' || !p.rawQuery.path)) {
@@ -1431,12 +1461,10 @@
         tbody.innerHTML = '';
         let count = 0;
         conversionResults.forEach((res, origIndex) => {
-          const subtype = getInputSubtype(res.parsed);
-          if (proto === 'reality' && subtype !== 'reality') return;
-          if (proto === 'xhttp' && subtype !== 'xhttp') return;
+          const generatedUrl = res.generated[proto];
+          if (!generatedUrl) return;
 
           count++;
-          const generatedUrl = res.generated[proto];
           const isCf = (proto === 'hysteria' && isCloudflareHost(res.parsed.host));
           const tr = document.createElement('tr');
           tr.className = 'border-b border-zinc-900 hover:bg-zinc-900/20 transition-colors group';
