@@ -812,6 +812,16 @@
           if (config.sid) q.set('sid', config.sid);
           if (config.sni) q.set('sni', config.sni);
           
+          // TCP Reality bypass rules
+          const type = q.get('type') || '';
+          const security = q.get('security') || '';
+          if (type.toLowerCase() === 'tcp' && security.toLowerCase() === 'reality') {
+            q.set('fragment', '10-30,10-20,tlshello');
+            q.set('mux', '0');
+            q.set('fp', 'random');
+            if (q.has('fingerprint')) q.set('fingerprint', 'random');
+          }
+          
           reality = `vless://${cred}@${host}:${port}?${q.toString()}#${nameReality}`;
         }
 
@@ -829,6 +839,11 @@
             q.set('extra', config.xhttpExtra);
           }
           if (config.sni) q.set('sni', config.sni);
+          
+          // Apply XHTTP stabilization parameters
+          q.set('fp', 'random');
+          q.set('mux', '0');
+          if (q.has('fingerprint')) q.set('fingerprint', 'random');
           
           xhttp = `vless://${cred}@${host}:${port}?${q.toString()}#${nameXhttp}`;
         }
@@ -874,6 +889,12 @@
           if (config.pinsha256) params.set('pinsha256', config.pinsha256);
           if (config.hop) params.set('hop', config.hop);
           if (config.mtu) params.set('mtu', config.mtu);
+          
+          // Add Obfuscation parameters by default for max upgrade
+          params.set('obfs', 'salamander');
+          if (!params.has('obfs-password')) {
+            params.set('obfs-password', 'salamander_password');
+          }
           
           // Parse and append Hysteria2 extra parameters (e.g. obfs, obfs-password) from the UI if present
           if (config.extraParams) {
@@ -1377,82 +1398,39 @@
         let script = `#!/bin/sh\n# Автоматический импорт прокси для ZeroBlock\n# Скопируйте и запустите на роутере через SSH\n\n`;
         
         results.forEach(res => {
-          const p = res.parsed;
-          const cred = p.credentials;
-          const host = p.host;
-          const port = p.port;
-          const sni = config.sni || p.sni || host;
-
           // 1. Native Hysteria2
           if (res.generated.hysteria) {
             const nameHy2 = res.generated.names.hysteria;
-            const insecureVal = p.rawQuery.insecure !== undefined ? p.rawQuery.insecure : (config.insecure ? "1" : "0");
-            const pinsha256Val = p.rawQuery.pinsha256 || config.pinsha256 || '';
-            const hopVal = p.rawQuery.hop || config.hop || '';
-            const mtuVal = p.rawQuery.mtu || config.mtu || '';
-
-            // Extract obfs parameters from generated URL
-            const targetUrl = new URL(res.generated.hysteria.replace("hysteria2://", "http://"));
-            const obfs = targetUrl.searchParams.get("obfs");
-            const obfsPassword = targetUrl.searchParams.get("obfs-password");
-
             script += `# Добавление Hysteria2: ${nameHy2}\n`;
             script += `uci add zeroblock proxy\n`;
             script += `uci set zeroblock.@proxy[-1].name='${nameHy2}'\n`;
-            script += `uci set zeroblock.@proxy[-1].proto='hysteria2'\n`;
-            script += `uci set zeroblock.@proxy[-1].server='${host}'\n`;
-            script += `uci set zeroblock.@proxy[-1].port='${port}'\n`;
-            script += `uci set zeroblock.@proxy[-1].password='${cred}'\n`;
-            script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
-            script += `uci set zeroblock.@proxy[-1].insecure='${insecureVal}'\n`;
-            if (obfs) script += `uci set zeroblock.@proxy[-1].obfs='${obfs}'\n`;
-            if (obfsPassword) script += `uci set zeroblock.@proxy[-1].obfs_password='${obfsPassword}'\n`;
-            if (pinsha256Val) script += `uci set zeroblock.@proxy[-1].pinsha256='${pinsha256Val}'\n`;
-            if (hopVal) script += `uci set zeroblock.@proxy[-1].hop='${hopVal}'\n`;
-            if (mtuVal) script += `uci set zeroblock.@proxy[-1].mtu='${mtuVal}'\n`;
+            script += `uci set zeroblock.@proxy[-1].connection_type='proxy'\n`;
+            script += `uci set zeroblock.@proxy[-1].proxy_config_type='url'\n`;
+            script += `uci set zeroblock.@proxy[-1].proxy_string='${res.generated.hysteria}'\n`;
             script += `\n`;
           }
 
           // 2. VLESS Reality
           if (res.generated.reality) {
             const nameReality = res.generated.names.reality;
-            const pbk = p.pbk || config.pbk || 'PLACEHOLDER_PBK';
-            const sid = p.sid || config.sid || 'PLACEHOLDER_SID';
-            const flow = p.rawQuery.flow || 'xtls-rprx-vision';
-            
             script += `# Добавление VLESS Reality: ${nameReality}\n`;
             script += `uci add zeroblock proxy\n`;
             script += `uci set zeroblock.@proxy[-1].name='${nameReality}'\n`;
-            script += `uci set zeroblock.@proxy[-1].proto='vless'\n`;
-            script += `uci set zeroblock.@proxy[-1].server='${host}'\n`;
-            script += `uci set zeroblock.@proxy[-1].port='${port}'\n`;
-            script += `uci set zeroblock.@proxy[-1].uuid='${cred}'\n`;
-            script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
-            script += `uci set zeroblock.@proxy[-1].flow='${flow}'\n`;
-            script += `uci set zeroblock.@proxy[-1].security='reality'\n`;
-            script += `uci set zeroblock.@proxy[-1].pbk='${pbk}'\n`;
-            script += `uci set zeroblock.@proxy[-1].sid='${sid}'\n`;
+            script += `uci set zeroblock.@proxy[-1].connection_type='proxy'\n`;
+            script += `uci set zeroblock.@proxy[-1].proxy_config_type='url'\n`;
+            script += `uci set zeroblock.@proxy[-1].proxy_string='${res.generated.reality}'\n`;
             script += `\n`;
           }
 
           // 3. VLESS XHTTP
           if (res.generated.xhttp) {
             const nameXhttp = res.generated.names.xhttp;
-            let xhttpPath = p.rawQuery.path || '/xhttppath/';
-            if (config.xhttpPath && (config.xhttpPath !== '/xhttppath/' || !p.rawQuery.path)) {
-              xhttpPath = config.xhttpPath;
-            }
-            
             script += `# Добавление VLESS XHTTP: ${nameXhttp}\n`;
             script += `uci add zeroblock proxy\n`;
             script += `uci set zeroblock.@proxy[-1].name='${nameXhttp}'\n`;
-            script += `uci set zeroblock.@proxy[-1].proto='vless'\n`;
-            script += `uci set zeroblock.@proxy[-1].server='${host}'\n`;
-            script += `uci set zeroblock.@proxy[-1].port='${port}'\n`;
-            script += `uci set zeroblock.@proxy[-1].uuid='${cred}'\n`;
-            script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
-            script += `uci set zeroblock.@proxy[-1].transport='xhttp'\n`;
-            script += `uci set zeroblock.@proxy[-1].path='${xhttpPath}'\n`;
+            script += `uci set zeroblock.@proxy[-1].connection_type='proxy'\n`;
+            script += `uci set zeroblock.@proxy[-1].proxy_config_type='url'\n`;
+            script += `uci set zeroblock.@proxy[-1].proxy_string='${res.generated.xhttp}'\n`;
             script += `\n`;
           }
         });
