@@ -812,6 +812,16 @@
           if (config.sid) q.set('sid', config.sid);
           if (config.sni) q.set('sni', config.sni);
           
+          // TCP Reality bypass rules
+          const type = q.get('type') || '';
+          const security = q.get('security') || '';
+          if (type.toLowerCase() === 'tcp' && security.toLowerCase() === 'reality') {
+            q.set('fragment', '10-30,10-20,tlshello');
+            q.set('mux', '0');
+            q.set('fp', 'random');
+            if (q.has('fingerprint')) q.set('fingerprint', 'random');
+          }
+          
           reality = `vless://${cred}@${host}:${port}?${q.toString()}#${nameReality}`;
         }
 
@@ -829,6 +839,11 @@
             q.set('extra', config.xhttpExtra);
           }
           if (config.sni) q.set('sni', config.sni);
+          
+          // Apply XHTTP stabilization parameters
+          q.set('fp', 'random');
+          q.set('mux', '0');
+          if (q.has('fingerprint')) q.set('fingerprint', 'random');
           
           xhttp = `vless://${cred}@${host}:${port}?${q.toString()}#${nameXhttp}`;
         }
@@ -874,6 +889,12 @@
           if (config.pinsha256) params.set('pinsha256', config.pinsha256);
           if (config.hop) params.set('hop', config.hop);
           if (config.mtu) params.set('mtu', config.mtu);
+          
+          // Add Obfuscation parameters
+          params.set('obfs', 'salamander');
+          if (!params.has('obfs-password')) {
+            params.set('obfs-password', 'salamander_password');
+          }
           
           hysteria = `hysteria2://${cred}@${host}:${port}?${params.toString()}#${nameHysteria}`;
         }
@@ -1261,7 +1282,7 @@
               "server_name": sni,
               "utls": {
                 "enabled": true,
-                "fingerprint": p.rawQuery.fp || "chrome"
+                "fingerprint": p.rawQuery.fp || p.rawQuery.fingerprint || "random"
               },
               "reality": {
                 "enabled": true,
@@ -1371,6 +1392,11 @@
             const hopVal = p.rawQuery.hop || config.hop || '';
             const mtuVal = p.rawQuery.mtu || config.mtu || '';
 
+            // Extract obfs parameters from generated URL
+            const targetUrl = new URL(res.generated.hysteria.replace("hysteria2://", "http://"));
+            const obfs = targetUrl.searchParams.get("obfs") || "salamander";
+            const obfsPassword = targetUrl.searchParams.get("obfs-password") || "salamander_password";
+
             script += `# Добавление Hysteria2: ${nameHy2}\n`;
             script += `uci add zeroblock proxy\n`;
             script += `uci set zeroblock.@proxy[-1].name='${nameHy2}'\n`;
@@ -1380,6 +1406,8 @@
             script += `uci set zeroblock.@proxy[-1].password='${cred}'\n`;
             script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
             script += `uci set zeroblock.@proxy[-1].insecure='${insecureVal}'\n`;
+            script += `uci set zeroblock.@proxy[-1].obfs='${obfs}'\n`;
+            script += `uci set zeroblock.@proxy[-1].obfs_password='${obfsPassword}'\n`;
             if (pinsha256Val) script += `uci set zeroblock.@proxy[-1].pinsha256='${pinsha256Val}'\n`;
             if (hopVal) script += `uci set zeroblock.@proxy[-1].hop='${hopVal}'\n`;
             if (mtuVal) script += `uci set zeroblock.@proxy[-1].mtu='${mtuVal}'\n`;
@@ -1393,6 +1421,12 @@
             const sid = p.sid || config.sid || 'PLACEHOLDER_SID';
             const flow = p.rawQuery.flow || 'xtls-rprx-vision';
             
+            // Get parameters from rawQuery or generated link URL params
+            const targetUrl = new URL(res.generated.reality.replace("vless://", "http://"));
+            const fp = targetUrl.searchParams.get("fp") || targetUrl.searchParams.get("fingerprint") || "random";
+            const fragment = targetUrl.searchParams.get("fragment") || "10-30,10-20,tlshello";
+            const mux = targetUrl.searchParams.get("mux") || "0";
+
             script += `# Добавление VLESS Reality: ${nameReality}\n`;
             script += `uci add zeroblock proxy\n`;
             script += `uci set zeroblock.@proxy[-1].name='${nameReality}'\n`;
@@ -1405,6 +1439,9 @@
             script += `uci set zeroblock.@proxy[-1].security='reality'\n`;
             script += `uci set zeroblock.@proxy[-1].pbk='${pbk}'\n`;
             script += `uci set zeroblock.@proxy[-1].sid='${sid}'\n`;
+            script += `uci set zeroblock.@proxy[-1].fingerprint='${fp}'\n`;
+            script += `uci set zeroblock.@proxy[-1].fragment='${fragment}'\n`;
+            script += `uci set zeroblock.@proxy[-1].mux='${mux}'\n`;
             script += `\n`;
           }
 
@@ -1416,6 +1453,11 @@
               xhttpPath = config.xhttpPath;
             }
             
+            // Extract parameters from generated URL
+            const targetUrl = new URL(res.generated.xhttp.replace("vless://", "http://"));
+            const fp = targetUrl.searchParams.get("fp") || targetUrl.searchParams.get("fingerprint") || "random";
+            const mux = targetUrl.searchParams.get("mux") || "0";
+            
             script += `# Добавление VLESS XHTTP: ${nameXhttp}\n`;
             script += `uci add zeroblock proxy\n`;
             script += `uci set zeroblock.@proxy[-1].name='${nameXhttp}'\n`;
@@ -1426,6 +1468,8 @@
             script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
             script += `uci set zeroblock.@proxy[-1].transport='xhttp'\n`;
             script += `uci set zeroblock.@proxy[-1].path='${xhttpPath}'\n`;
+            script += `uci set zeroblock.@proxy[-1].fingerprint='${fp}'\n`;
+            script += `uci set zeroblock.@proxy[-1].mux='${mux}'\n`;
             script += `\n`;
           }
         });
