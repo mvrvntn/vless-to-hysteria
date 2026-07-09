@@ -890,10 +890,12 @@
           if (config.hop) params.set('hop', config.hop);
           if (config.mtu) params.set('mtu', config.mtu);
           
-          // Add Obfuscation parameters
-          params.set('obfs', 'salamander');
-          if (!params.has('obfs-password')) {
-            params.set('obfs-password', 'salamander_password');
+          // Parse and append Hysteria2 extra parameters (e.g. obfs, obfs-password) from the UI if present
+          if (config.extraParams) {
+            const extraP = new URLSearchParams(config.extraParams);
+            for (const [k, v] of extraP.entries()) {
+              params.set(k, v);
+            }
           }
           
           hysteria = `hysteria2://${cred}@${host}:${port}?${params.toString()}#${nameHysteria}`;
@@ -1351,6 +1353,18 @@
           if (pinsha256Val) hysteriaOutbound.tls.pin_sha256 = pinsha256Val;
           hysteriaOutbound.up_mbps = upVal;
           hysteriaOutbound.down_mbps = downVal;
+
+          // Add obfs if present in the final generated URL
+          const targetUrl = new URL(res.generated.hysteria.replace("hysteria2://", "http://"));
+          const obfs = targetUrl.searchParams.get("obfs");
+          const obfsPassword = targetUrl.searchParams.get("obfs-password");
+          if (obfs) {
+            hysteriaOutbound.obfs = {
+              "type": obfs,
+              "password": obfsPassword || ""
+            };
+          }
+
           return hysteriaOutbound;
         }
         return null;
@@ -1394,8 +1408,8 @@
 
             // Extract obfs parameters from generated URL
             const targetUrl = new URL(res.generated.hysteria.replace("hysteria2://", "http://"));
-            const obfs = targetUrl.searchParams.get("obfs") || "salamander";
-            const obfsPassword = targetUrl.searchParams.get("obfs-password") || "salamander_password";
+            const obfs = targetUrl.searchParams.get("obfs");
+            const obfsPassword = targetUrl.searchParams.get("obfs-password");
 
             script += `# Добавление Hysteria2: ${nameHy2}\n`;
             script += `uci add zeroblock proxy\n`;
@@ -1406,8 +1420,8 @@
             script += `uci set zeroblock.@proxy[-1].password='${cred}'\n`;
             script += `uci set zeroblock.@proxy[-1].sni='${sni}'\n`;
             script += `uci set zeroblock.@proxy[-1].insecure='${insecureVal}'\n`;
-            script += `uci set zeroblock.@proxy[-1].obfs='${obfs}'\n`;
-            script += `uci set zeroblock.@proxy[-1].obfs_password='${obfsPassword}'\n`;
+            if (obfs) script += `uci set zeroblock.@proxy[-1].obfs='${obfs}'\n`;
+            if (obfsPassword) script += `uci set zeroblock.@proxy[-1].obfs_password='${obfsPassword}'\n`;
             if (pinsha256Val) script += `uci set zeroblock.@proxy[-1].pinsha256='${pinsha256Val}'\n`;
             if (hopVal) script += `uci set zeroblock.@proxy[-1].hop='${hopVal}'\n`;
             if (mtuVal) script += `uci set zeroblock.@proxy[-1].mtu='${mtuVal}'\n`;
