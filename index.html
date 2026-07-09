@@ -890,12 +890,6 @@
           if (config.hop) params.set('hop', config.hop);
           if (config.mtu) params.set('mtu', config.mtu);
           
-          // Add Obfuscation parameters by default for max upgrade
-          params.set('obfs', 'salamander');
-          if (!params.has('obfs-password')) {
-            params.set('obfs-password', 'salamander_password');
-          }
-          
           // Parse and append Hysteria2 extra parameters (e.g. obfs, obfs-password) from the UI if present
           if (config.extraParams) {
             const extraP = new URLSearchParams(config.extraParams);
