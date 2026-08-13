@@ -1391,12 +1391,14 @@
       function generateUciImportScript(results, config) {
         let script = `#!/bin/sh\n# Автоматический импорт прокси для ZeroBlock\n# Скопируйте и запустите на роутере через SSH\n\n`;
         
+        script += `# 1. Добавление прокси как отдельные узлы (Standalone Proxy Nodes):\n`;
         results.forEach(res => {
           // 1. Native Hysteria2
           if (res.generated.hysteria) {
             const nameHy2 = res.generated.names.hysteria;
-            script += `# Добавление Hysteria2: ${nameHy2}\n`;
+            script += `# Hysteria2: ${nameHy2}\n`;
             script += `uci add zeroblock proxy\n`;
+            script += `uci set zeroblock.@proxy[-1].enabled='1'\n`;
             script += `uci set zeroblock.@proxy[-1].name='${nameHy2}'\n`;
             script += `uci set zeroblock.@proxy[-1].connection_type='proxy'\n`;
             script += `uci set zeroblock.@proxy[-1].proxy_config_type='url'\n`;
@@ -1407,8 +1409,9 @@
           // 2. VLESS Reality
           if (res.generated.reality) {
             const nameReality = res.generated.names.reality;
-            script += `# Добавление VLESS Reality: ${nameReality}\n`;
+            script += `# VLESS Reality: ${nameReality}\n`;
             script += `uci add zeroblock proxy\n`;
+            script += `uci set zeroblock.@proxy[-1].enabled='1'\n`;
             script += `uci set zeroblock.@proxy[-1].name='${nameReality}'\n`;
             script += `uci set zeroblock.@proxy[-1].connection_type='proxy'\n`;
             script += `uci set zeroblock.@proxy[-1].proxy_config_type='url'\n`;
@@ -1419,8 +1422,9 @@
           // 3. VLESS XHTTP
           if (res.generated.xhttp) {
             const nameXhttp = res.generated.names.xhttp;
-            script += `# Добавление VLESS XHTTP: ${nameXhttp}\n`;
+            script += `# VLESS XHTTP: ${nameXhttp}\n`;
             script += `uci add zeroblock proxy\n`;
+            script += `uci set zeroblock.@proxy[-1].enabled='1'\n`;
             script += `uci set zeroblock.@proxy[-1].name='${nameXhttp}'\n`;
             script += `uci set zeroblock.@proxy[-1].connection_type='proxy'\n`;
             script += `uci set zeroblock.@proxy[-1].proxy_config_type='url'\n`;
@@ -1428,8 +1432,16 @@
             script += `\n`;
           }
         });
+
+        script += `# 2. Добавление ссылок напрямую в пул активной подписки MVRVNTN:\n`;
+        script += `uci set zeroblock.MVRVNTN.enable_extra_proxy_urls='1'\n`;
+        results.forEach(res => {
+          if (res.generated.hysteria) script += `uci add_list zeroblock.MVRVNTN.proxy_url='${res.generated.hysteria}'\n`;
+          if (res.generated.reality) script += `uci add_list zeroblock.MVRVNTN.proxy_url='${res.generated.reality}'\n`;
+          if (res.generated.xhttp) script += `uci add_list zeroblock.MVRVNTN.proxy_url='${res.generated.xhttp}'\n`;
+        });
         
-        script += `uci commit zeroblock\n`;
+        script += `\nuci commit zeroblock\n`;
         script += `/etc/init.d/zeroblock restart\n`;
         script += `echo "✅ Все прокси успешно импортированы в ZeroBlock!"\n`;
         return script;
