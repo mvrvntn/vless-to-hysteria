@@ -812,17 +812,21 @@
           if (config.sid) q.set('sid', config.sid);
           if (config.sni) q.set('sni', config.sni);
           
-          // TCP Reality bypass rules
-          const type = q.get('type') || '';
-          const security = q.get('security') || '';
-          if (type.toLowerCase() === 'tcp' && security.toLowerCase() === 'reality') {
+          let realName = nameReality;
+          const type = (q.get('type') || '').toLowerCase();
+          const security = (q.get('security') || '').toLowerCase();
+          
+          if (type === 'grpc') {
+            realName = `${baseName}_REALITY_GRPC`;
+          } else if (type === 'tcp' && security === 'reality') {
+            realName = `${baseName}_REALITY_VISION`;
             q.set('fragment', '10-30,10-20,tlshello');
             q.set('mux', '0');
             q.set('fp', 'random');
             if (q.has('fingerprint')) q.set('fingerprint', 'random');
           }
           
-          reality = `vless://${cred}@${host}:${port}?${q.toString()}#${nameReality}`;
+          reality = `vless://${cred}@${host}:${port}?${q.toString()}#${realName}`;
         }
 
         // 2. VLESS XHTTP
